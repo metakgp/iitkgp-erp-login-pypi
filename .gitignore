@@ -2,9 +2,13 @@
 .DS_Store
 __pycache__/
 
-# Build files
+# Build Files
 dist/
 *.egg-info
- 
+
+# Publishing Automation
+publish.sh
+test-publish.sh
+
 # Testing
 tests/
