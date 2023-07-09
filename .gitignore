@@ -1,15 +1,6 @@
 # trash
 .DS_Store
 __pycache__/
-
-# Build related
-dist/
-*.egg-info/
-
-# Secrets
-*.json
-creds.py
-
-# Automation and testing
-publish.sh
-test.py 
+ 
+# Testing
+tests/
