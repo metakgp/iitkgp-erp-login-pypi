@@ -1,6 +1,10 @@
 # trash
 .DS_Store
 __pycache__/
+
+# Build files
+dist/
+*.egg-info
  
 # Testing
 tests/
