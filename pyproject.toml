@@ -18,5 +18,5 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/proffapt/iitkgp_erp_login"
-"Bug Tracker" = "https://github.com/proffapt/iitkgp_erp_login/issues"
+"Homepage" = "https://github.com/proffapt/iitkgp-erp-login-pypi"
+"Bug Tracker" = "https://github.com/proffapt/iitkgp-erp-login-pypi/issues"
