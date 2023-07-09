@@ -1,6 +1,7 @@
 import os
 import time
 import base64
+import inspect
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -8,10 +9,20 @@ from google.auth.transport.requests import Request
 
 SUBJECT = "OTP for Sign In in ERP Portal of IIT Kharagpur"
 
+def getImportLocation():
+    frame = inspect.currentframe()
+    while frame.f_back:
+        frame = frame.f_back
+
+    script_file_path = frame.f_globals['__file__']
+    script_directory_path = os.path.dirname(script_file_path)
+    
+    return script_directory_path
+
 def setupGoogleAPI():
     creds = None
-    token_path = "token.json"
-    credentials_path = "credentials.json"
+    token_path = os.path.join(getImportLocation(), "token.json")
+    credentials_path = os.path.join(getImportLocation(), "credentials.json")
     scopes = ["https://www.googleapis.com/auth/gmail.readonly"]
 
     if os.path.exists(token_path):
