@@ -3,7 +3,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from bs4 import BeautifulSoup as bs
 import logging
 import re
-import iitkgp_erp_login.erp_otp as erp_otp
+from iitkgp_erp_login.read_mail import getOTP
 from iitkgp_erp_login.endpoints import *
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -37,7 +37,7 @@ def login(headers, erp_creds, OTP_WAIT_INTERVAL, session):
 
     try:
         logging.info(" Waiting for OTP...")
-        otp = erp_otp.get(OTP_WAIT_INTERVAL)
+        otp = getOTP(OTP_WAIT_INTERVAL)
         logging.info(" Received OTP")
     except Exception as e:
         raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
