@@ -67,5 +67,5 @@ def login(headers, erp_creds, OTP_WAIT_INTERVAL, session):
 
 
 def session_alive(session):
-    r = session.get(HOMEPAGE_URL)
+    r = session.get(WELCOMEPAGE_URL)
     return r.status_code == 404
