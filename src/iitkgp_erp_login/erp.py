@@ -63,6 +63,8 @@ def login(headers, erp_creds, OTP_WAIT_INTERVAL, session):
 
     logging.info(" ERP login completed!")
 
+    return sessionToken, ssoToken
+
 
 def session_alive(session):
     r = session.get(HOMEPAGE_URL)
