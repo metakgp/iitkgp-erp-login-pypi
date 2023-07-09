@@ -8,7 +8,7 @@ from google.auth.transport.requests import Request
 
 SUBJECT = "OTP for Sign In in ERP Portal of IIT Kharagpur"
 
-def setup_api():
+def setupGoogleAPI():
     creds = None
     token_path = "token.json"
     credentials_path = "credentials.json"
@@ -30,7 +30,7 @@ def setup_api():
 
     return build("gmail", "v1", credentials=creds)
 
-def get_mail_id(service):
+def getMailID(service):
     query = f"subject:{SUBJECT}"
     results = service.users().messages().list(userId="me", q=query, maxResults=1).execute()
     messages = results.get("messages", [])
@@ -41,12 +41,12 @@ def get_mail_id(service):
     
     return None
 
-def get(OTP_WAIT_INTERVAL):
-    service = setup_api()
-    latest_mail_id = get_mail_id(service)
+def getOTP(OTP_WAIT_INTERVAL):
+    service = setupGoogleAPI()
     
+    latest_mail_id = getMailID(service)
     while True:
-        if (mail_id := get_mail_id(service)) != latest_mail_id:
+        if (mail_id := getMailID(service)) != latest_mail_id:
             break
         
         time.sleep(OTP_WAIT_INTERVAL)
