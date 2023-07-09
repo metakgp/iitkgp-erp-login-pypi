@@ -2,3 +2,6 @@
 dist/
 *.egg-info/
 publish.sh
+*.json
+__pycache__/
+test.py 
