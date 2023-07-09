@@ -3,8 +3,8 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from bs4 import BeautifulSoup as bs
 import logging
 import re
-import erp_otp
-from endpoints import *
+import iitkgp_erp_login.erp_otp as erp_otp
+from iitkgp_erp_login.endpoints import *
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 logging.basicConfig(level=logging.INFO)
