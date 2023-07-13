@@ -12,10 +12,10 @@ logging.basicConfig(level=logging.INFO)
 class ErpLoginError(Exception):
     pass
 
-def login(headers, session, erpcreds=None, OTP_CHECK_INTERVAL=None, LOGGING=False):
-    if erpcreds != None:
-        ROLL_NUMBER = erpcreds.ROLL_NUMBER
-        PASSWORD = erpcreds.PASSWORD
+def login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=False):
+    if ERPCREDS != None:
+        ROLL_NUMBER = ERPCREDS.ROLL_NUMBER
+        PASSWORD = ERPCREDS.PASSWORD
     else:
         import getpass
         ROLL_NUMBER = input("Enter you Roll Number: ")
@@ -34,8 +34,8 @@ def login(headers, session, erpcreds=None, OTP_CHECK_INTERVAL=None, LOGGING=Fals
         secret_question = r.text
         logging.info(" Fetched Security Question") if LOGGING else None
 
-        if erpcreds != None:
-            secret_answer = erpcreds.SECURITY_QUESTIONS_ANSWERS[secret_question]
+        if ERPCREDS != None:
+            secret_answer = ERPCREDS.SECURITY_QUESTIONS_ANSWERS[secret_question]
         else:
             print ("Your secret question: " + secret_question)
             secret_answer = getpass.getpass("Enter the answer to the secret question: ")
