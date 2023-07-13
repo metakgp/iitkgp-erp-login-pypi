@@ -31,31 +31,35 @@ def login(headers, erp_creds, OTP_WAIT_INTERVAL, session):
 
     try:
         r = session.post(OTP_URL, data={'typeee': 'SI', 'loginid': erp_creds.ROLL_NUMBER}, headers=headers)
-        logging.info(" Requested OTP")
     except requests.exceptions.RequestException as e:
         raise ErpLoginError(f"Failed to request OTP: {str(e)}")
+    
+    login_details = {
+        'user_id': erp_creds.ROLL_NUMBER,
+        'password': erp_creds.PASSWORD,
+        'answer': secret_answer,
+        'sessionToken': sessionToken,
+        'requestedUrl': HOMEPAGE_URL,
+    }
+
+    if r.status_code == 200:
+        logging.info(" Requested OTP")
+        try:
+            logging.info(" Waiting for OTP...")
+            otp = getOTP(OTP_WAIT_INTERVAL)
+            logging.info(" Received OTP")
+        except Exception as e:
+            raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
+        
+        login_details['email_otp'] = otp
+    else:
+        logging.info(" OTP is not required :yay")
 
     try:
-        logging.info(" Waiting for OTP...")
-        otp = getOTP(OTP_WAIT_INTERVAL)
-        logging.info(" Received OTP")
-    except Exception as e:
-        raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
-
-    try:
-        login_details = {
-            'user_id': erp_creds.ROLL_NUMBER,
-            'password': erp_creds.PASSWORD,
-            'answer': secret_answer,
-            'email_otp': otp,
-            'sessionToken': sessionToken,
-            'requestedUrl': HOMEPAGE_URL,
-        }
-
         r = session.post(LOGIN_URL, data=login_details, headers=headers)
         ssoToken = re.search(r'\?ssoToken=(.+)$', r.history[1].headers['Location'])
         if ssoToken is None:
-            raise ErpLoginError("Incorrect OTP")
+            raise ErpLoginError(f"Failed to generate ssoToken: {str(e)}")
         ssoToken = ssoToken.group(1)
         logging.info(" Generated ssoToken")
     except (requests.exceptions.RequestException, IndexError) as e:
