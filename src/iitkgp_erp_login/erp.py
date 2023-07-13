@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 class ErpLoginError(Exception):
     pass
 
-def login(headers, erp_creds, OTP_WAIT_INTERVAL, session):
+def login(headers, session, erpcreds, OTP_CHECK_INTERVAL=None):
     try:
         r = session.get(HOMEPAGE_URL)
         soup = bs(r.text, 'html.parser')
@@ -22,21 +22,21 @@ def login(headers, erp_creds, OTP_WAIT_INTERVAL, session):
         raise ErpLoginError(f"Failed to generate session token: {str(e)}")
     
     try:
-        r = session.post(SECRET_QUESTION_URL, data={'user_id': erp_creds.ROLL_NUMBER}, headers=headers)
+        r = session.post(SECRET_QUESTION_URL, data={'user_id': erpcreds.ROLL_NUMBER}, headers=headers)
         secret_question = r.text
-        secret_answer = erp_creds.SECURITY_QUESTIONS_ANSWERS[secret_question]
+        secret_answer = erpcreds.SECURITY_QUESTIONS_ANSWERS[secret_question]
         logging.info(" Fetched Security Question")
     except (requests.exceptions.RequestException, KeyError) as e:
         raise ErpLoginError(f"Failed to fetch Security Question: {str(e)}")
 
     try:
-        r = session.post(OTP_URL, data={'typeee': 'SI', 'loginid': erp_creds.ROLL_NUMBER}, headers=headers)
+        r = session.post(OTP_URL, data={'typeee': 'SI', 'loginid': erpcreds.ROLL_NUMBER}, headers=headers)
     except requests.exceptions.RequestException as e:
         raise ErpLoginError(f"Failed to request OTP: {str(e)}")
     
     login_details = {
-        'user_id': erp_creds.ROLL_NUMBER,
-        'password': erp_creds.PASSWORD,
+        'user_id': erpcreds.ROLL_NUMBER,
+        'password': erpcreds.PASSWORD,
         'answer': secret_answer,
         'sessionToken': sessionToken,
         'requestedUrl': HOMEPAGE_URL,
@@ -44,13 +44,17 @@ def login(headers, erp_creds, OTP_WAIT_INTERVAL, session):
 
     if r.status_code == 200:
         logging.info(" Requested OTP")
-        try:
-            logging.info(" Waiting for OTP...")
-            otp = getOTP(OTP_WAIT_INTERVAL)
-            logging.info(" Received OTP")
-        except Exception as e:
-            raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
         
+        if OTP_CHECK_INTERVAL != None:
+                try:
+                    logging.info(" Waiting for OTP...")
+                    otp = getOTP(OTP_CHECK_INTERVAL)
+                    logging.info(" Received OTP")
+                except Exception as e:
+                    raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
+        else:
+            otp = input("Enter the OTP sent to your registered email address: ").strip()
+            
         login_details['email_otp'] = otp
     else:
         logging.info(" OTP is not required :yay")
