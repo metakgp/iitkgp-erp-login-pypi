@@ -12,7 +12,15 @@ logging.basicConfig(level=logging.INFO)
 class ErpLoginError(Exception):
     pass
 
-def login(headers, session, erpcreds, OTP_CHECK_INTERVAL=None):
+def login(headers, session, erpcreds=None, OTP_CHECK_INTERVAL=None):
+    if erpcreds != None:
+        ROLL_NUMBER = erpcreds.ROLL_NUMBER
+        PASSWORD = erpcreds.PASSWORD
+    else:
+        import getpass
+        ROLL_NUMBER = input("Enter you Roll Number: ")
+        PASSWORD = getpass.getpass("Enter your ERP password: ")
+
     try:
         r = session.get(HOMEPAGE_URL)
         soup = bs(r.text, 'html.parser')
@@ -22,21 +30,26 @@ def login(headers, session, erpcreds, OTP_CHECK_INTERVAL=None):
         raise ErpLoginError(f"Failed to generate session token: {str(e)}")
     
     try:
-        r = session.post(SECRET_QUESTION_URL, data={'user_id': erpcreds.ROLL_NUMBER}, headers=headers)
+        r = session.post(SECRET_QUESTION_URL, data={'user_id': ROLL_NUMBER}, headers=headers)
         secret_question = r.text
-        secret_answer = erpcreds.SECURITY_QUESTIONS_ANSWERS[secret_question]
         logging.info(" Fetched Security Question")
+
+        if erpcreds != None:
+            secret_answer = erpcreds.SECURITY_QUESTIONS_ANSWERS[secret_question]
+        else:
+            print ("Your secret question: " + secret_question)
+            secret_answer = getpass.getpass("Enter the answer to the secret question: ")
     except (requests.exceptions.RequestException, KeyError) as e:
         raise ErpLoginError(f"Failed to fetch Security Question: {str(e)}")
 
     try:
-        r = session.post(OTP_URL, data={'typeee': 'SI', 'loginid': erpcreds.ROLL_NUMBER}, headers=headers)
+        r = session.post(OTP_URL, data={'typeee': 'SI', 'loginid': ROLL_NUMBER}, headers=headers)
     except requests.exceptions.RequestException as e:
         raise ErpLoginError(f"Failed to request OTP: {str(e)}")
     
     login_details = {
-        'user_id': erpcreds.ROLL_NUMBER,
-        'password': erpcreds.PASSWORD,
+        'user_id': ROLL_NUMBER,
+        'password': PASSWORD,
         'answer': secret_answer,
         'sessionToken': sessionToken,
         'requestedUrl': HOMEPAGE_URL,
