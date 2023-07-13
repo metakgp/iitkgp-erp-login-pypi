@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 class ErpLoginError(Exception):
     pass
 
-def login(headers, session, erpcreds=None, OTP_CHECK_INTERVAL=None):
+def login(headers, session, erpcreds=None, OTP_CHECK_INTERVAL=None, LOGGING=False):
     if erpcreds != None:
         ROLL_NUMBER = erpcreds.ROLL_NUMBER
         PASSWORD = erpcreds.PASSWORD
@@ -25,14 +25,14 @@ def login(headers, session, erpcreds=None, OTP_CHECK_INTERVAL=None):
         r = session.get(HOMEPAGE_URL)
         soup = bs(r.text, 'html.parser')
         sessionToken = soup.find(id='sessionToken')['value']
-        logging.info(" Generated session token")
+        logging.info(" Generated session token") if LOGGING else None
     except (requests.exceptions.RequestException, KeyError) as e:
         raise ErpLoginError(f"Failed to generate session token: {str(e)}")
     
     try:
         r = session.post(SECRET_QUESTION_URL, data={'user_id': ROLL_NUMBER}, headers=headers)
         secret_question = r.text
-        logging.info(" Fetched Security Question")
+        logging.info(" Fetched Security Question") if LOGGING else None
 
         if erpcreds != None:
             secret_answer = erpcreds.SECURITY_QUESTIONS_ANSWERS[secret_question]
@@ -56,13 +56,13 @@ def login(headers, session, erpcreds=None, OTP_CHECK_INTERVAL=None):
     }
 
     if r.status_code == 200:
-        logging.info(" Requested OTP")
+        logging.info(" Requested OTP") if LOGGING else None
         
         if OTP_CHECK_INTERVAL != None:
                 try:
-                    logging.info(" Waiting for OTP...")
+                    logging.info(" Waiting for OTP...") if LOGGING else None
                     otp = getOTP(OTP_CHECK_INTERVAL)
-                    logging.info(" Received OTP")
+                    logging.info(" Received OTP") if LOGGING else None
                 except Exception as e:
                     raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
         else:
@@ -70,7 +70,7 @@ def login(headers, session, erpcreds=None, OTP_CHECK_INTERVAL=None):
             
         login_details['email_otp'] = otp
     else:
-        logging.info(" OTP is not required :yay")
+        logging.info(" OTP is not required :yay") if LOGGING else None
 
     try:
         r = session.post(LOGIN_URL, data=login_details, headers=headers)
@@ -78,11 +78,11 @@ def login(headers, session, erpcreds=None, OTP_CHECK_INTERVAL=None):
         if ssoToken is None:
             raise ErpLoginError(f"Failed to generate ssoToken: {str(e)}")
         ssoToken = ssoToken.group(1)
-        logging.info(" Generated ssoToken")
+        logging.info(" Generated ssoToken") if LOGGING else None
     except (requests.exceptions.RequestException, IndexError) as e:
         raise ErpLoginError(f"ERP login failed: {str(e)}")
 
-    logging.info(" ERP login completed!")
+    logging.info(" ERP login completed!") if LOGGING else None
 
     return sessionToken, ssoToken
 
