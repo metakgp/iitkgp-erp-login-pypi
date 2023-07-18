@@ -285,14 +285,14 @@ while True:
 <div id="ssotoken-alive"></div>
 
 ### ssoToken status check
-The logic for checking the status of the ssoToken is implemented in the `ssotoken_alive(ssoToken)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py). This function determines whether the given ssoToken is valid/alive or not. The input and output specifications for the function are mentioned below.
+The logic for checking the validity of the ssoToken is implemented in the `ssotoken_alive(ssoToken)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py). This function determines whether the given ssoToken is valid or not. The input and output specifications for the function are mentioned below.
 
 <div id="ssotoken-alive-input"></div>
 
 #### Input
 The function requires following argument:
 
- -  `ssoToken`: [ssoToken](https://en.wikipedia.org/wiki/Single_sign-on) object, to persist the session parameters throughout the workflow.
+ -  `ssoToken`: [ssoToken](https://en.wikipedia.org/wiki/Single_sign-on) The second returned argument for the login function.
     ```python
     import requests
 
@@ -301,11 +301,11 @@ The function requires following argument:
 <div id="ssotoken-alive-output"></div>
 
 #### Output
-The `ssotoken_alive(session)` function returns the status of validity of the ssotoken as a boolean value:
+The `ssotoken_alive(ssoToken)` function returns the validity status of the ssotoken as a boolean value:
 | Status | Return Value |
 | ------ | :------------: |
-| Valid (`Alive`)  | `True` |
-| Not Valid (`Dead`) | `False` |
+| Valid | `True` |
+| Not Valid | `False` |
 
 <div id="ssotoken-alive-usage"></div>
 
@@ -315,7 +315,7 @@ It is recommended to use the `ssotoken_alive` function in the following manner:
 # Importing the erp.py file
 import iitkgp_erp_login.erp as erp
 
-# Using the session_alive function inside erp.py
+# Using the ssotoken_alive function inside erp.py
 print(erp.ssotoken_alive(ssoToken))
 ```
 
