@@ -17,6 +17,10 @@ A python package/module to automate login process in ERP for IIT-KGP.
       - <a href="#session-alive-input">Input</a>
       - <a href="#session-alive-output">Output</a>
       - <a href="#session-alive-usage">Usage</a>
+   - <a href="#ssotoken-alive">ssoToken status check</a>
+      - <a href="#ssotoken-alive-input">Input</a>
+      - <a href="#ssotoken-alive-output">Output</a>
+      - <a href="#ssotoken-alive-usage">Usage</a>
 - <a href="#example">Example</a>
    
 </details>
@@ -276,6 +280,43 @@ while True:
         print("Session is alive.")
 
     time.sleep(2)
+```
+
+<div id="ssotoken-alive"></div>
+
+### ssoToken status check
+The logic for checking the status of the ssoToken is implemented in the `ssotoken_alive(ssoToken)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py). This function determines whether the given ssoToken is valid/alive or not. The input and output specifications for the function are mentioned below.
+
+<div id="ssotoken-alive-input"></div>
+
+#### Input
+The function requires following argument:
+
+ -  `ssoToken`: [ssoToken](https://en.wikipedia.org/wiki/Single_sign-on) object, to persist the session parameters throughout the workflow.
+    ```python
+    import requests
+
+    session = requests.Session()
+     ```
+<div id="ssotoken-alive-output"></div>
+
+#### Output
+The `ssotoken_alive(session)` function returns the status of validity of the ssotoken as a boolean value:
+| Status | Return Value |
+| ------ | :------------: |
+| Valid (`Alive`)  | `True` |
+| Not Valid (`Dead`) | `False` |
+
+<div id="ssotoken-alive-usage"></div>
+
+#### Usage
+It is recommended to use the `ssotoken_alive` function in the following manner:
+```python
+# Importing the erp.py file
+import iitkgp_erp_login.erp as erp
+
+# Using the session_alive function inside erp.py
+print(erp.ssotoken_alive(ssoToken))
 ```
 
 <div id="example"></div>
