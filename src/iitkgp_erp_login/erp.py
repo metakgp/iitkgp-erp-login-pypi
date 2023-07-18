@@ -90,3 +90,8 @@ def login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=Fals
 def session_alive(session):
     r = session.get(WELCOMEPAGE_URL)
     return r.status_code == 404
+
+def ssotoken_alive(ssoToken):
+    response = requests.get(f"{HOMEPAGE_URL}?ssoToken={ssoToken}")
+    content_type = str(response.headers).split(',')[-1].split("'")[-2]
+    return content_type == 'text/html;charset=UTF-8'
