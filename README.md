@@ -123,7 +123,7 @@ The function can also be provided with these _optional_ arguments:
     
 <div id="token"></div>
     
-2.  `OTP_CHECK_INTERVAL`: The interval, in seconds, after which the API continuously checks for new OTP emails.
+2.  `OTP_CHECK_INTERVAL`: The interval (in _seconds_) after which the API continuously checks for new OTP emails.
     | Default Value | `None` |
     |---|---|
     | NOT Specified | The user will be prompted to manually enter the received OTP |
@@ -292,12 +292,14 @@ The logic for checking the validity of the ssoToken is implemented in the `ssoto
 #### Input
 The function requires following argument:
 
- -  `ssoToken`: [ssoToken](https://en.wikipedia.org/wiki/Single_sign-on) The second returned argument for the login function.
+ -  `ssoToken`: The second returned value from the `login` function.
     ```python
-    import requests
+    # Importing the erp.py file
+    import iitkgp_erp_login.erp as erp
 
-    session = requests.Session()
-     ```
+    # Using the login function inside erp.py
+    _, ssoToken = erp.login(headers, session)
+    ```
 <div id="ssotoken-alive-output"></div>
 
 #### Output
@@ -317,6 +319,40 @@ import iitkgp_erp_login.erp as erp
 
 # Using the ssotoken_alive function inside erp.py
 print(erp.ssotoken_alive(ssoToken))
+```
+Here's an example combining all the aspects we have discussed so far about the `login` function and `ssotoken_alive` function. This code can be used to log in to the ERP system while storing the ssoToken. If the ssoToken remains valid, it can be used directly for subsequent logins, eliminating the need to re-authenticate each time:
+
+```python
+import webbrowser
+import requests
+import time
+
+import creds
+# Importing creds.py, which contains ERP credentials
+
+import iitkgp_erp_login.erp as erp
+
+headers = {
+    'timeout': '20',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/51.0.2704.79 Chrome/51.0.2704.79 Safari/537.36',
+}
+session = requests.Session()
+print("Logging into ERP for:", creds.ROLL_NUMBER)
+
+if os.path.exists(".session"):
+    while open(".session", "r") as file:
+        ssoToken = file.read()
+    if not erp.ssotoken_alive(ssoToken):
+        _, ssoToken = erp.login(headers, session, ERPCREDS=creds, OTP_CHECK_TIMEOUT=2, LOGGING=True)
+        while open(".session", "w") as file:
+            file.write(ssoToken)
+else:
+    _, ssoToken = erp.login(headers, session, ERPCREDS=creds, OTP_CHECK_TIMEOUT=2, LOGGING=True)
+    while open(".session", "w") as file:
+        file.write(ssoToken)
+
+logged_in_url = f"{HOMEPAGE_URL}?ssoToken={ssoToken}"
+webbrowser.open(logged_in_url)
 ```
 
 <div id="example"></div>
