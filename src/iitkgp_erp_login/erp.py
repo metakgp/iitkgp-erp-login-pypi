@@ -92,6 +92,11 @@ def session_alive(session):
     return r.status_code == 404
 
 def ssotoken_alive(ssoToken):
-    response = requests.get(f"{HOMEPAGE_URL}?ssoToken={ssoToken}")
-    content_type = str(response.headers).split(',')[-1].split("'")[-2]
-    return content_type == 'text/html;charset=UTF-8'
+    cookies = requests.get(f"{HOMEPAGE_URL}?ssoToken={token}").headers.get("Set-Cookie")
+    path = "/SSOAdministration"
+    for cookie in cookies.split(";"):
+        cookie = [x.strip() for x in cookie.split("=")]
+        if cookie[0] == "Path":
+            path = cookie[1]
+
+    return path != "/SSOAdministration"
