@@ -43,7 +43,7 @@ def login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=Fals
         raise ErpLoginError(f"Failed to fetch Security Question: {str(e)}")
 
     try:
-        r = session.post(OTP_URL, data={'typeee': 'SI', 'loginid': ROLL_NUMBER}, headers=headers)
+        r = session.post(OTP_URL, data={'typeee': 'SI', 'loginid': ROLL_NUMBER, 'pass': PASSWORD}, headers=headers)
     except requests.exceptions.RequestException as e:
         raise ErpLoginError(f"Failed to request OTP: {str(e)}")
     
