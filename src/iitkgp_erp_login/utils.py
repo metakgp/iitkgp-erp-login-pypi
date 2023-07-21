@@ -1,18 +1,22 @@
 import os
+import sys
 import inspect
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 def get_import_location():
-    frame = inspect.currentframe()
-    while frame.f_back:
-        frame = frame.f_back
+    if len(sys.argv) == 1 and sys.argv[0] == '-c':
+        return os.getcwd()
+    else:
+        current_frame = inspect.currentframe()
+        while current_frame.f_back:
+            current_frame = current_frame.f_back
 
-    script_file_path = frame.f_globals['__file__']
-    script_directory_path = os.path.dirname(script_file_path)
-    
-    return script_directory_path
+        script_file_path = inspect.getframeinfo(current_frame).filename
+        script_directory_path = os.path.dirname(script_file_path)
+
+        return script_directory_path
 
 def generate_token():
 	token_path = os.path.join(get_import_location(), "token.json")
