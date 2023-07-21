@@ -14,10 +14,10 @@ def get_import_location():
     
     return script_directory_path
 
-def generate_token(permission):
+def generate_token():
 	token_path = os.path.join(get_import_location(), "token.json")
 	credentials_path = os.path.join(get_import_location(), "credentials.json")
-	scopes = [f"https://www.googleapis.com/auth/gmail.{permission}"]	
+	scopes = [f"https://www.googleapis.com/auth/gmail.readonly"]	
 
 	creds = None
 	if os.path.exists(token_path):

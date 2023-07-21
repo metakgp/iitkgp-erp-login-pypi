@@ -17,7 +17,7 @@ def getMailID(service):
     return None
 
 def getOTP(OTP_CHECK_INTERVAL):
-    creds = generate_token("readonly")
+    creds = generate_token()
     service = build("gmail", "v1", credentials=creds)
     
     latest_mail_id = getMailID(service)
