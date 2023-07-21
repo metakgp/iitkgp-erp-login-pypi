@@ -116,10 +116,13 @@ jobs:
           for file in "${files[@]}"; do
             if [ -n "$(git status --porcelain $file)" ]; then
               git add $file
+              
               if [ "$file" == ".github/CHANGELOG.md" ]; then
                 git commit -S -m "docs(changelog): update $(basename $file)"
               elif [ "$file" == "pyproject.toml" ]; then
                 git commit -S -m "chore(release): update $(basename $file)"
+              fi
+              
               git push origin $(git rev-parse --abbrev-ref HEAD)
             else
               echo "No changes in $file."
