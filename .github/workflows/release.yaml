@@ -95,6 +95,12 @@ jobs:
             echo -e "# CHANGELOG\n\n $logs" > "$changelog_file"
             echo "Changelog generated successfully"
           fi
+
+      - name: Update version in project.toml
+        run: |
+          latest_tag=$(cat release_tag.txt)
+          latest_release=${latest_tag#v}
+          sed -i "s/.*version =.*/version = \"${latest_release}\"/" pyproject.toml
           
       - name: Configure git
         run: |
@@ -106,11 +112,14 @@ jobs:
       - name: Commit & push changes
         run: |
           rm changelog.txt
-          files=(".github/CHANGELOG.md")
+          files=(".github/CHANGELOG.md" "pyproject.toml")
           for file in "${files[@]}"; do
             if [ -n "$(git status --porcelain $file)" ]; then
               git add $file
-              git commit -S -m "docs(changelog): update $(basename $file)"
+              if [ "$file" == ".github/CHANGELOG.md" ]; then
+                git commit -S -m "docs(changelog): update $(basename $file)"
+              elif [ "$file" == "pyproject.toml" ]; then
+                git commit -S -m "chore(release): update $(basename $file)"
               git push origin $(git rev-parse --abbrev-ref HEAD)
             else
               echo "No changes in $file."
@@ -132,9 +141,6 @@ jobs:
 
       - name: Build package
         run: |
-          latest_tag=$(cat release_tag.txt)
-          latest_release=${latest_tag#v}
-          sed -i "s/.*version =.*/version = \"${latest_release}\"/" pyproject.toml
           python3 -m build
 
       - name: Attach files to release
