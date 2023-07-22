@@ -28,10 +28,7 @@ def login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=Fals
     token_file = f"{get_import_location(caller_file)}/{SESSION_STORAGE_FILE}" if SESSION_STORAGE_FILE else ""
     if SESSION_STORAGE_FILE:
         try:
-            with open(token_file, "r") as file:
-                lines = file.readlines()
-                sessionToken = lines[0].strip() if len(lines) > 0 else None
-                ssoToken = lines[1].strip() if len(lines) > 1 else None
+            sessionToken, ssoToken = get_tokens_from_file(token_file)
             logging.info(" Retrieved tokens from the file") if LOGGING else None
         except (FileNotFoundError, IOError):
             logging.error(f" Token file doesn't exist") if LOGGING else None
@@ -130,3 +127,13 @@ def ssotoken_valid(ssoToken):
     response = requests.get(f"{HOMEPAGE_URL}?ssoToken={ssoToken}")
     content_type = str(response.headers).split(',')[-1].split("'")[-2]
     return content_type == 'text/html;charset=UTF-8'
+
+
+def get_tokens_from_file(token_file):
+    with open(token_file, "r") as file:
+        lines = file.readlines()
+        sessionToken = lines[0].strip() if len(lines) > 0 else None
+        ssoToken = lines[1].strip() if len(lines) > 1 else None
+
+    return sessionToken, ssoToken
+
