@@ -21,11 +21,11 @@ class ErpLoginError(Exception):
 def login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=False, SESSION_STORAGE_FILE=None):
     global sessionToken
     ssoToken = None
-	if len(sys.argv) == 1 and sys.argv[0] == '-c':
-		caller_file = None
-	else:
+    if len(sys.argv) == 1 and sys.argv[0] == '-c':
+        caller_file = None
+    else:
         caller_file = inspect.getframeinfo(inspect.currentframe().f_back).filename
-    token_file = f"{get_import_location(caller_file)}/{SESSION_STORAGE_FILE}" if SESSION_STORAGE_FILE else None
+    token_file = f"{get_import_location(caller_file)}/{SESSION_STORAGE_FILE}" if SESSION_STORAGE_FILE else ""
     if SESSION_STORAGE_FILE:
         try:
             with open(token_file, "r") as file:
