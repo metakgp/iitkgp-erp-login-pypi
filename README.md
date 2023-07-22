@@ -29,6 +29,7 @@ Key Features:
 	- <a href="#ssotoken-alive-input">Input</a>
 	- <a href="#ssotoken-alive-output">Output</a>
 	- <a href="#ssotoken-alive-usage">Usage</a>
+- <a href="#tokens-from-file">Get tokens from file</a>
 - <a href="#example">Example</a>
 
 </details>
@@ -394,6 +395,45 @@ webbrowser.open(logged_in_url)
 ```
 
 > **Note** This is merely a Proof of Concept example; this exact functionality has been integrated into the login function itself from version **2.1.0** onwards.
+
+<div id="tokens-from-file"></div>
+
+## Get tokens from file
+
+The logic for retrieving tokens (`sessionToken` & `ssoToken`) from a file, created earlier by the module itself, is implemented in the `get_tokens_from_file(token_file)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py). The input and output specifications for the function are mentioned below.
+
+<table>
+<tr>
+<td> Input </td> 
+<td> 
+
+`token_file` - The file containing tokens. 
+
+</td>
+</tr>
+<tr>
+<td> Output </td>
+<td>
+
+`sessionToken, ssoToken`
+
+</td>
+</tr>
+<tr>
+<td> Usage </td>
+<td>
+
+```python
+import iitkgp_erp_login.erp as erp
+
+sessionToken, ssoToken = erp.get_tokens_from_file('.session_token')
+# Here, '.session_token' is the name of file contianing session tokens.
+# It must be as same as the value of 'SESSION_STORAGE_FILE', if used.
+```
+
+</td>
+</tr>
+</table>
 
 <div id="example"></div>
 
