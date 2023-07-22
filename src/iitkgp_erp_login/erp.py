@@ -19,8 +19,8 @@ class ErpLoginError(Exception):
 def login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=False, SESSION_STORAGE_FILE=None):
     global sessionToken
     ssoToken = None
+    token_file = f"{get_import_location()}/{SESSION_STORAGE_FILE}" if SESSION_STORAGE_FILE else None
     if SESSION_STORAGE_FILE:
-        token_file = f"{get_import_location()}/{SESSION_STORAGE_FILE}" if SESSION_STORAGE_FILE else None
         try:
             with open(token_file, "r") as file:
                 lines = file.readlines()
@@ -33,8 +33,7 @@ def login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=Fals
     if ssoToken and ssotoken_valid(ssoToken):
         logging.info(" [SSOToken STATUS]: Valid!") if LOGGING else None
     else:
-        if SESSION_STORAGE_FILE:
-            logging.info(" [SSOToken STATUS]: Not Valid!") if LOGGING and os.path.exists(SESSION_STORAGE_FILE) else None
+        logging.info(" [SSOToken STATUS]: Not Valid!") if LOGGING and os.path.exists(token_file) else None
         
         if ERPCREDS != None:
             ROLL_NUMBER = ERPCREDS.ROLL_NUMBER
@@ -109,10 +108,8 @@ def login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=Fals
 
         if SESSION_STORAGE_FILE:
             with open(token_file, "w") as file:
-                if sessionToken:
-                    file.write(sessionToken + "\n")
-                if ssoToken:
-                    file.write(ssoToken + "\n")
+                file.write(sessionToken + "\n")
+                file.write(ssoToken + "\n")
             logging.info(" Stored tokens in the file") if LOGGING else None
 
     return sessionToken, ssoToken
