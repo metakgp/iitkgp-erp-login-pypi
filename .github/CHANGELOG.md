@@ -1,5 +1,18 @@
 # CHANGELOG
 
+ ### [2.1.1](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.1.0...v2.1.1) (2023-07-22)
+
+
+### Features
+
+* **multithreading-support:** Patched frame call back specially for MFTP ([87cb67d](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/87cb67daeafddf97f2b687d92c776627448b0b99))
+
+
+### Bug Fixes
+
+* **logs:** Condition for logging 'Not Valid!' status of saved SSOToken ([c6e0771](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/c6e077115823cb83482ac298caed727c98fdeb47))
+
+ 
  ## [2.1.0](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.0.1...v2.1.0) (2023-07-21)
 
 
