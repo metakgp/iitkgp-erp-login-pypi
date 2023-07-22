@@ -1,5 +1,13 @@
 # CHANGELOG
 
+ ### [2.1.2](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.1.1...v2.1.2) (2023-07-22)
+
+
+### Bug Fixes
+
+* Failed when SESSION_STORAGE_FILE(optional) wasn't provided ([9c9941f](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/9c9941fab926195916506ae7101c07b045d9d579))
+
+ 
  ### [2.1.1](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.1.0...v2.1.1) (2023-07-22)
 
 
