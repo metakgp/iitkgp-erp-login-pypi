@@ -1,5 +1,18 @@
 # CHANGELOG
 
+ ### [2.1.3](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.1.2...v2.1.3) (2023-07-23)
+
+
+### Features
+
+* Fetch tokens from a file, created by the pacakge itself ([c51a4fa](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/c51a4fa7855bc945e2751d2d9c6c14d35fa3a5c6))
+
+
+### Bug Fixes
+
+* Updating cookies for re-using session rather than SSOToken ([8036028](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/8036028192a1485f553becc9b377bd3bdcdf21d2))
+
+ 
  ### [2.1.2](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.1.1...v2.1.2) (2023-07-22)
 
 
