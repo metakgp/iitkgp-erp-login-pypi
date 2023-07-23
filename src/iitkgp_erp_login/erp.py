@@ -34,9 +34,10 @@ def login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=Fals
             logging.error(f" Token file doesn't exist") if LOGGING else None
 
     if ssoToken and ssotoken_valid(ssoToken):
-        logging.info(" [SSOToken STATUS]: Valid!") if LOGGING else None
+        logging.info(" [SSOToken STATUS] >> Valid <<") if LOGGING else None
+        session.cookies.set('ssoToken', ssoToken, domain='erp.iitkgp.ac.in')
     else:
-        logging.info(" [SSOToken STATUS]: Not Valid!") if LOGGING and os.path.exists(token_file) else None
+        logging.info(" [SSOToken STATUS] >> Not Valid <<") if LOGGING and os.path.exists(token_file) else None
         
         if ERPCREDS != None:
             ROLL_NUMBER = ERPCREDS.ROLL_NUMBER
