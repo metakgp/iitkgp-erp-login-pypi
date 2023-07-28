@@ -17,12 +17,13 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
+  "bs4",
+  "ping3",
+  "requests",
   "google-auth",
   "google-auth-oauthlib",
   "google-auth-httplib2",
   "google-api-python-client",
-  "requests",
-  "bs4",
 ]
 
 [project.urls]

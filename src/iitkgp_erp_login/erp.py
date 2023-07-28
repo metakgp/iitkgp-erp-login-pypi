@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import ping3
 import inspect
 import logging
 import requests
@@ -68,11 +69,6 @@ def login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=Fals
         except (requests.exceptions.RequestException, KeyError) as e:
             raise ErpLoginError(f"Failed to fetch Security Question: {str(e)}")
 
-        try:
-            r = session.post(OTP_URL, data={'typeee': 'SI', 'loginid': ROLL_NUMBER, 'pass': PASSWORD}, headers=headers)
-        except requests.exceptions.RequestException as e:
-            raise ErpLoginError(f"Failed to request OTP: {str(e)}")
-        
         login_details = {
             'user_id': ROLL_NUMBER,
             'password': PASSWORD,
@@ -81,8 +77,12 @@ def login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=Fals
             'requestedUrl': HOMEPAGE_URL,
         }
 
-        if r.status_code == 200:
-            logging.info(" Requested OTP") if LOGGING else None
+        if not ping3.ping("iitkgp.ac.in"):
+            try:
+                r = session.post(OTP_URL, data={'typeee': 'SI', 'loginid': ROLL_NUMBER, 'pass': PASSWORD}, headers=headers)
+                logging.info(" Requested OTP") if LOGGING else None
+            except requests.exceptions.RequestException as e:
+                raise ErpLoginError(f"Failed to request OTP: {str(e)}")
             
             if OTP_CHECK_INTERVAL != None:
                     try:
