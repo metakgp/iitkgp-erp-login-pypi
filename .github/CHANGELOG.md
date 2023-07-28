@@ -1,5 +1,13 @@
 # CHANGELOG
 
+ ## [2.2.0](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.1.3...v2.2.0) (2023-07-28)
+
+
+### Bug Fixes
+
+* OTP fetching wasn't handled when on campus network ([1bafd8b](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/1bafd8bd0bbf53004fd89ab0cc0e0af39abb8ed9))
+
+ 
  ### [2.1.3](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.1.2...v2.1.3) (2023-07-23)
 
 
