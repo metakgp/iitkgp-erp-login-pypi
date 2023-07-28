@@ -11,6 +11,10 @@ Key Features:
 
 > **Note** This package is not officially affiliated with IIT Kharagpur.
 
+https://github.com/proffapt/iitkgp-erp-login-pypi/assets/86282911/c0401f6a-80af-46ae-8a8f-ac735f0e67b5
+> Guess the number of lines of python code it will take you to achieve this.
+>> Reading this doc will give you the answer.
+
 <details>
   <summary>Table of Contents</summary>
 
