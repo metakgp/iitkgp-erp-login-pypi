@@ -28,20 +28,34 @@ def generate_token():
 		caller_file = inspect.getframeinfo(inspect.currentframe().f_back.f_back.f_back).filename
 	token_path = os.path.join(get_import_location(caller_file), "token.json")
 	credentials_path = os.path.join(get_import_location(caller_file), "credentials.json")
-	scopes = [f"https://www.googleapis.com/auth/gmail.readonly"]	
+	scopes = [f"https://www.googleapis.com/auth/gmail.readonly"]
 
 	creds = None
 	if os.path.exists(token_path):
-		creds = Credentials.from_authorized_user_file(token_path, scopes)	
+		creds = Credentials.from_authorized_user_file(token_path, scopes)
 	if not creds or not creds.valid:
 		if creds and creds.expired and creds.refresh_token:
 			creds.refresh(Request())
 		else:
 			flow = InstalledAppFlow.from_client_secrets_file(credentials_path, scopes)
-			creds = flow.run_local_server(port=0)	
+			creds = flow.run_local_server(port=0)
 
 		if not os.path.exists(token_path):
 			with open(token_path, "w") as token:
 				token.write(creds.to_json())
 
 		return creds
+
+def get_tokens_from_file(token_file):
+    with open(token_file, "r") as file:
+        lines = file.readlines()
+        sessionToken = lines[0].strip() if len(lines) > 0 else None
+        ssoToken = lines[1].strip() if len(lines) > 1 else None
+
+    return sessionToken, ssoToken
+
+def get_caller_file():
+    if len(sys.argv) == 1 and sys.argv[0] == '-c':
+        return None
+    else:
+        return inspect.getframeinfo(inspect.currentframe().f_back).filename
