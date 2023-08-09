@@ -22,6 +22,7 @@ class LoginDetails(TypedDict):
     answer: str
     sessionToken: str
     requestedUrl: str
+    email_otp: str
 
 class ErpCreds(TypedDict):
     ROLL_NUMBER: str
@@ -65,6 +66,22 @@ def get_session_token(session: requests.Session):
 
     return soup.find(id='sessionToken')['value']
 
+def is_otp_required():
+    """Checks whether the request is run from the campus network (OTP not required) or not."""
+    return not ping3.ping("iitkgp.ac.in")
+
+def request_otp(
+    session: requests.Session,
+    headers: dict[str, str],
+    roll_number: str,
+    password: str,
+    log: bool
+):
+    """Requests an OTP to be sent."""
+    session.post(OTP_URL, data={'typeee': 'SI', 'loginid': roll_number, 'pass': password}, headers=headers)
+
+    if log: logging.info(" Requested OTP")
+
 def erp_login(session: requests.Session, login_details: LoginDetails, headers: dict[str, str], log: bool):
     """Logs into the ERP for the given session."""
     try:
@@ -87,85 +104,103 @@ def write_session_token(token_file: str, sessionToken: str, ssoToken: str):
         file.write(sessionToken + "\n")
         file.write(ssoToken + "\n")
 
-def login(headers: dict[str, str], session: requests.Session, ERPCREDS: ErpCreds | None = None, OTP_CHECK_INTERVAL: float | None = None, LOGGING: bool | None = False, SESSION_STORAGE_FILE: str | None = None):
+def login(
+    headers: dict[str, str],
+    session: requests.Session,
+    ERPCREDS: ErpCreds | None = None,
+    OTP_CHECK_INTERVAL: float | None = None,
+    LOGGING: bool | None = False,
+    SESSION_STORAGE_FILE: str | None = None
+):
+    """Complete login workflow for the CLI."""
     global sessionToken
     ssoToken = None
 
     caller_file = get_caller_file()
 
+    # Import credentials if passed to the function
     ROLL_NUMBER = ERPCREDS["ROLL_NUMBER"] if ERPCREDS else None
     PASSWORD = ERPCREDS["PASSWORD"] if ERPCREDS else None
     SECURITY_QUESTIONS_ANSWERS = ERPCREDS["SECURITY_QUESTIONS_ANSWERS"] if ERPCREDS else None
 
     token_file = f"{get_import_location(caller_file)}/{SESSION_STORAGE_FILE}" if SESSION_STORAGE_FILE else ""
 
+    # Read session tokens from the token file if it exists
     if SESSION_STORAGE_FILE: sessionToken, ssoToken = read_session_token_from_file(token_file=token_file, log=LOGGING)
 
+    # Check if the tokens imported from the file are valid and return if yes
     if ssoToken and ssotoken_valid(ssoToken):
         logging.info(" [SSOToken STATUS] >> Valid <<") if LOGGING else None
         session.cookies.set('ssoToken', ssoToken, domain='erp.iitkgp.ac.in')
-    else:
-        logging.info(" [SSOToken STATUS] >> Not Valid <<") if LOGGING and os.path.exists(token_file) else None
 
-        if not ROLL_NUMBER: ROLL_NUMBER = input("Enter you Roll Number: ")
-        if not PASSWORD: PASSWORD = getpass.getpass("Enter your ERP password: ")
+        return sessionToken, ssoToken
 
-        try:
-            sessionToken = get_session_token(session=session)
-            logging.info(" Generated sessionToken") if LOGGING else None
-        except (requests.exceptions.RequestException, KeyError) as e:
-            raise ErpLoginError(f"Failed to generate session token: {str(e)}")
+    logging.info(" [SSOToken STATUS] >> Not Valid <<") if LOGGING and os.path.exists(token_file) else None
 
-        try:
-            secret_question = get_secret_question(session=session, roll_number=ROLL_NUMBER, headers=headers)
-            logging.info(" Fetched Security Question") if LOGGING else None
+    # If roll number and password were not provided, take CLI input
+    if not ROLL_NUMBER: ROLL_NUMBER = input("Enter you Roll Number: ")
+    if not PASSWORD: PASSWORD = getpass.getpass("Enter your ERP password: ")
 
-            if SECURITY_QUESTIONS_ANSWERS:
-                secret_answer = SECURITY_QUESTIONS_ANSWERS[secret_question]
-            else:
-                print ("Your secret question: " + secret_question)
-                secret_answer = getpass.getpass("Enter the answer to the secret question: ")
+    # Try to generate a session token
+    try:
+        sessionToken = get_session_token(session=session)
+        logging.info(" Generated sessionToken") if LOGGING else None
+    except (requests.exceptions.RequestException, KeyError) as e:
+        raise ErpLoginError(f"Failed to generate session token: {str(e)}")
 
-        except (requests.exceptions.RequestException, KeyError) as e:
-            raise ErpLoginError(f"Failed to fetch Security Question: {str(e)}")
+    # Get the secret question for the roll number
+    try:
+        secret_question = get_secret_question(session=session, roll_number=ROLL_NUMBER, headers=headers)
+        logging.info(" Fetched Security Question") if LOGGING else None
 
-        login_details = {
-            'user_id': ROLL_NUMBER,
-            'password': PASSWORD,
-            'answer': secret_answer,
-            'sessionToken': sessionToken,
-            'requestedUrl': HOMEPAGE_URL,
-        }
-
-        if not ping3.ping("iitkgp.ac.in"):
-            try:
-                r = session.post(OTP_URL, data={'typeee': 'SI', 'loginid': ROLL_NUMBER, 'pass': PASSWORD}, headers=headers)
-                logging.info(" Requested OTP") if LOGGING else None
-            except requests.exceptions.RequestException as e:
-                raise ErpLoginError(f"Failed to request OTP: {str(e)}")
-
-            if OTP_CHECK_INTERVAL != None:
-                    try:
-                        logging.info(" Waiting for OTP...") if LOGGING else None
-                        otp = getOTP(OTP_CHECK_INTERVAL)
-                        logging.info(" Received OTP") if LOGGING else None
-                    except Exception as e:
-                        raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
-            else:
-                otp = input("Enter the OTP sent to your registered email address: ").strip()
-
-            login_details['email_otp'] = otp
+        # If the security question answers were provided, use them, else take CLI input
+        if SECURITY_QUESTIONS_ANSWERS:
+            secret_answer = SECURITY_QUESTIONS_ANSWERS[secret_question]
         else:
-            logging.info(" OTP is not required :yay") if LOGGING else None
+            print("Your secret question: " + secret_question)
+            secret_answer = getpass.getpass("Enter the answer to the secret question: ")
 
+    except (requests.exceptions.RequestException, KeyError) as e:
+        raise ErpLoginError(f"Failed to fetch Security Question: {str(e)}")
+
+    # All login details/credentials (except OTP)
+    login_details: LoginDetails = {
+        'user_id': ROLL_NUMBER,
+        'password': PASSWORD,
+        'answer': secret_answer,
+        'sessionToken': sessionToken,
+        'requestedUrl': HOMEPAGE_URL,
+    }
+
+    if is_otp_required():
         try:
-            ssoToken = erp_login(session=session, login_details=login_details, headers=headers, log=LOGGING)
-        except e:
-            raise e
+            request_otp(session, headers, roll_number=ROLL_NUMBER, password=PASSWORD, log=LOGGING)
+        except requests.exceptions.RequestException as e:
+            raise ErpLoginError(f"Failed to request OTP: {str(e)}")
 
-        if SESSION_STORAGE_FILE:
-            write_session_token(token_file=token_file, ssoToken=ssoToken, sessionToken=sessionToken)
-            logging.info(" Stored tokens in the file") if LOGGING else None
+        if OTP_CHECK_INTERVAL != None:
+            try:
+                logging.info(" Waiting for OTP...") if LOGGING else None
+                otp = getOTP(OTP_CHECK_INTERVAL)
+                logging.info(" Received OTP") if LOGGING else None
+            except Exception as e:
+                raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
+        else:
+            otp = input("Enter the OTP sent to your registered email address: ").strip()
+
+        login_details["email_otp"] = otp
+    else:
+        logging.info(" OTP is not required :yay") if LOGGING else None
+
+    # Log into the ERP using the login details
+    try:
+        ssoToken = erp_login(session=session, login_details=login_details, headers=headers, log=LOGGING)
+    except e:
+        raise e
+
+    if SESSION_STORAGE_FILE:
+        write_session_token(token_file=token_file, ssoToken=ssoToken, sessionToken=sessionToken)
+        logging.info(" Stored tokens in the file") if LOGGING else None
 
     return sessionToken, ssoToken
 

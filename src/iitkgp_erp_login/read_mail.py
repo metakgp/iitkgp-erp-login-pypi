@@ -6,6 +6,7 @@ from iitkgp_erp_login.utils import generate_token
 SUBJECT = "OTP for Sign In in ERP Portal of IIT Kharagpur"
 
 def getMailID(service):
+    """Gets the ID for the email with the OTP."""
     query = f"subject:{SUBJECT}"
     results = service.users().messages().list(userId="me", q=query, maxResults=1).execute()
     messages = results.get("messages", [])
@@ -17,6 +18,7 @@ def getMailID(service):
     return None
 
 def getOTP(OTP_CHECK_INTERVAL: float):
+    """Checks for the OTP email and returns it if received."""
     creds = generate_token()
     service = build("gmail", "v1", credentials=creds)
 

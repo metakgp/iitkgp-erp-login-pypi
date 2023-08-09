@@ -46,7 +46,8 @@ def generate_token():
 
 		return creds
 
-def get_tokens_from_file(token_file):
+def get_tokens_from_file(token_file: str):
+    """Gets the session and sso tokens from the token file if it exists."""
     with open(token_file, "r") as file:
         lines = file.readlines()
         sessionToken = lines[0].strip() if len(lines) > 0 else None
