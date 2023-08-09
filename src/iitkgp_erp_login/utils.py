@@ -54,9 +54,3 @@ def get_tokens_from_file(token_file: str):
         ssoToken = lines[1].strip() if len(lines) > 1 else None
 
     return sessionToken, ssoToken
-
-def get_caller_file():
-    if len(sys.argv) == 1 and sys.argv[0] == '-c':
-        return None
-    else:
-        return inspect.getframeinfo(inspect.currentframe().f_back).filename

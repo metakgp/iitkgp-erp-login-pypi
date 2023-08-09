@@ -6,9 +6,8 @@ from typing import TypedDict
 
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from bs4 import BeautifulSoup as bs
-from iitkgp_erp_login.read_mail import getOTP
 from iitkgp_erp_login.endpoints import *
-from iitkgp_erp_login.utils import get_import_location, get_tokens_from_file, get_caller_file
+from iitkgp_erp_login.utils import get_tokens_from_file
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 logging.basicConfig(level=logging.INFO)
