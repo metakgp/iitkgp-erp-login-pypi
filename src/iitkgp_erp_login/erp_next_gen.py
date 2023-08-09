@@ -15,11 +15,17 @@ sessionToken = ""
 
 class LoginDetails(TypedDict):
     user_id: str
+    "Roll number"
     password: str
+    "ERP password"
     answer: str
+    "Secret/security question's answer"
     sessionToken: str
+    "Session token"
     requestedUrl: str
+    "The ERP url/path that is requested/will be redirected to."
     email_otp: str
+    "OTP if required"
 
 class ErpCreds(TypedDict):
     ROLL_NUMBER: str
