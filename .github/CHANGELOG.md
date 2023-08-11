@@ -1,5 +1,13 @@
 # CHANGELOG
 
+ ### [2.2.1](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.2.0...v2.2.1) (2023-08-11)
+
+
+### Features
+
+* **minor:** Providing developer access to ROLL_NUMBER ([e5eec6f](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/e5eec6fb74ea30baca3e55b150283739ecf32e23))
+
+ 
  ## [2.2.0](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.1.3...v2.2.0) (2023-07-28)
 
 
