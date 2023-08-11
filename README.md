@@ -189,6 +189,13 @@ The function can also be provided with these _optional_ arguments:
    1. [sessionToken](https://en.wikipedia.org/wiki/Session_ID)
    2. [ssoToken](https://en.wikipedia.org/wiki/Single_sign-on)
 2. It also modifies the `session` object, which now includes parameters for the logged-in session. This `session` object can be utilized for further navigation within the ERP system.
+3. `ROLL_NUMBER` is made available for further usage in the following manner.
+   ```python
+    import iitkgp_erp_login.erp as erp
+    sessionToken, ssoToken = erp.login(headers, session)
+
+    print('Roll Number =', erp.ROLL_NUMBER)
+   ```
 
 <div id="login-usage"></div>
 

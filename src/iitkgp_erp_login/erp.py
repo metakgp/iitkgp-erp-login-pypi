@@ -14,6 +14,7 @@ from iitkgp_erp_login.utils import get_import_location
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 logging.basicConfig(level=logging.INFO)
 sessionToken = ""
+ROLL_NUMBER = ""
 
 class ErpLoginError(Exception):
     pass
@@ -21,6 +22,7 @@ class ErpLoginError(Exception):
 
 def login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=False, SESSION_STORAGE_FILE=None):
     global sessionToken
+    global ROLL_NUMBER
     ssoToken = None
     if len(sys.argv) == 1 and sys.argv[0] == '-c':
         caller_file = None
