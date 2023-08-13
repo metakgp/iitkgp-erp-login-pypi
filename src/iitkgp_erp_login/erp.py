@@ -42,7 +42,7 @@ class ErpCreds(TypedDict):
 class ErpLoginError(Exception):
     pass
 
-def get_sessiontoken(session: requests.Session, log: bool):
+def get_sessiontoken(session: requests.Session, log: bool = False):
     """Gets the session token from the response of an HTTP request."""
     try:
         r = session.get(HOMEPAGE_URL)
@@ -56,7 +56,7 @@ def get_sessiontoken(session: requests.Session, log: bool):
     return sessionToken
 
 
-def get_secret_question(headers: dict[str, str], session: requests.Session, roll_number: str, log: bool):
+def get_secret_question(headers: dict[str, str], session: requests.Session, roll_number: str, log: bool = False):
     """Fetches the secret question given the roll number."""
     try:
         r = session.post(SECRET_QUESTION_URL, data={'user_id': roll_number}, headers=headers)
@@ -68,19 +68,31 @@ def get_secret_question(headers: dict[str, str], session: requests.Session, roll
     return r.text
 
 
+def get_login_details(ROLL_NUMBER: str, PASSWORD: str, secret_answer: str, sessionToken: str):
+	login_details: LoginDetails = {
+        'user_id': ROLL_NUMBER,
+        'password': PASSWORD,
+        'answer': secret_answer,
+        'sessionToken': sessionToken,
+        'requestedUrl': HOMEPAGE_URL,
+    }
+
+	return login_details
+
+
 def is_otp_required():
     """Checks whether the request is run from the campus network (OTP not required) or not."""
     return not ping3.ping("iitkgp.ac.in")
 
 
-def request_otp(headers: dict[str, str], session: requests.Session, roll_number: str, password: str, log: bool):
+def request_otp(headers: dict[str, str], session: requests.Session, login_details: LoginDetails, log: bool = False):
     """Requests an OTP to be sent."""
     try:
         session.post(OTP_URL, 
                     data={
                         'typeee': 'SI', 
-                        'loginid': roll_number, 
-                        'pass': password
+                        'loginid': login_details["user_id"], 
+                        'pass': login_details["password"]
                         }, 
                     headers=headers)
     
@@ -89,7 +101,7 @@ def request_otp(headers: dict[str, str], session: requests.Session, roll_number:
         raise ErpLoginError(f"Failed to request OTP: {str(e)}")
 
 
-def signin(headers: dict[str, str], session: requests.Session, login_details: LoginDetails, log: bool):
+def signin(headers: dict[str, str], session: requests.Session, login_details: LoginDetails, log: bool = False):
     """Logs into the ERP for the given session."""
     try:
         r = session.post(LOGIN_URL, data=login_details, headers=headers)
@@ -160,17 +172,16 @@ def login(
         secret_answer = getpass.getpass("Enter the answer to your secret question: ")
 
     # All login details/credentials (except OTP)
-    login_details: LoginDetails = {
-        'user_id': ROLL_NUMBER,
-        'password': PASSWORD,
-        'answer': secret_answer,
-        'sessionToken': sessionToken,
-        'requestedUrl': HOMEPAGE_URL,
-    }
+    login_details = get_login_details(
+        ROLL_NUMBER=ROLL_NUMBER, 
+        PASSWORD=PASSWORD, 
+        secret_answer=secret_answer, 
+        sessionToken=sessionToken
+    )
 
     # Handling OTP - whether required or not
     if is_otp_required():
-        request_otp(headers=headers, session=session, roll_number=ROLL_NUMBER, password=PASSWORD, log=LOGGING)
+        request_otp(headers=headers, session=session, login_details=login_details, log=LOGGING)
 
         if OTP_CHECK_INTERVAL != None:
             try:
