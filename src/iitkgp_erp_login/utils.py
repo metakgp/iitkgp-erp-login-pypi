@@ -23,6 +23,7 @@ def write_tokens_to_file(token_file: str, sessionToken: str, ssoToken: str, log:
 
 def get_tokens_from_file(token_file: str, log: bool):
     """Reads session tokens from a token file if it exists."""
+    sessionToken, ssoToken = None, None
     try:
         with open(token_file, "r") as file:
             lines = file.readlines()
