@@ -1,5 +1,15 @@
 # CHANGELOG
 
+ ## [2.3.0](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.2.1...v2.3.0) (2023-08-15)
+
+
+### Features
+
+* **better-code:** Modularised the login workflow ([5e48e55](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/5e48e55d7285eb542253b66c6a00a911241b5dba))
+* Modular code capable of being used in backend for WebApps ([b64ca12](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/b64ca12a28a76b4850dbc342e30b7b8fc8a95346))
+* modularised writing and fetching of tokens from file ([cde9ff7](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/cde9ff7e18e0149a0af707eb31b82f3d647ad96f))
+
+ 
  ### [2.2.1](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.2.0...v2.2.1) (2023-08-11)
 
 
