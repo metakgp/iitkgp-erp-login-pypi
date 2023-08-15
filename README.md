@@ -8,6 +8,7 @@ Key Features:
 - Seamless Credentials & OTP Handling
 - Effortless Session & ssoToken Management
 - Smart Token Storage for Efficiency
+- Supports both CLI & WebApps
 
 > **Note** This package is not officially affiliated with IIT Kharagpur.
 
@@ -33,7 +34,14 @@ https://github.com/proffapt/iitkgp-erp-login-pypi/assets/86282911/c0401f6a-80af-
 	- <a href="#ssotoken-alive-input">Input</a>
 	- <a href="#ssotoken-alive-output">Output</a>
 	- <a href="#ssotoken-alive-usage">Usage</a>
-- <a href="#tokens-from-file">Get tokens from file</a>
+- <a href="#webapps">Using in WebApps</a>
+    - <a href="#webapps-get-session-token">Get Session Token</a>
+    - <a href="#webapps-get-secret-question">Get Secret Question</a>
+    - <a href="#webapps-get-login-details">Get Login Details</a>
+    - <a href="#webapps-is-otp-required">Is OTP Required</a>
+    - <a href="#webapps-request-otp">Request OTP</a>
+    - <a href="#webapps-sign-in">Sign In</a>
+    - <a href="#implementing-login-workflow-for-webapps">Implementing Login workflow</a>
 - <a href="#example">Example</a>
 
 </details>
@@ -72,7 +80,9 @@ print(LOGIN_URL)
 
 ## Login
 
-ERP login workflow is implemented in `login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=False, SESSION_STORAGE_FILE=None)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py). The input and output specifications for the function are mentioned below.
+ERP login workflow is implemented in `login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=False, SESSION_STORAGE_FILE=None)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py).
+
+> **Note** This function currently compiles the login workflow "ONLY for the CLI", not for web apps.
 
 <div id="login-input"></div>
 
@@ -256,7 +266,7 @@ sessionToken, ssoToken = erp.login(headers, session, ERPCREDS=erpcreds, OTP_CHEC
 
 ## Session status check
 
-The logic for checking the status of the session is implemented in the `session_alive(session)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py). This function determines whether the given session is valid/alive or not. The input and output specifications for the function are mentioned below.
+The logic for checking the status of the session is implemented in the `session_alive(session)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py). This function determines whether the given session is valid/alive or not.
 
 <div id="session-alive-input"></div>
 
@@ -323,12 +333,13 @@ while True:
 
     time.sleep(2)
 ```
+> **Note** This is merely a Proof of Concept example; this exact functionality has been integrated into the login function itself from version **2.1.0** onwards.
 
 <div id="ssotoken-alive"></div>
 
 ## SSOToken status check
 
-The logic for checking the validity of the ssoToken is implemented in the `ssotoken_valid(ssoToken)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py). The input and output specifications for the function are mentioned below.
+The logic for checking the validity of the ssoToken is implemented in the `ssotoken_valid(ssoToken)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py).
 
 <div id="ssotoken-alive-input"></div>
 
@@ -407,18 +418,25 @@ webbrowser.open(logged_in_url)
 
 > **Note** This is merely a Proof of Concept example; this exact functionality has been integrated into the login function itself from version **2.1.0** onwards.
 
-<div id="tokens-from-file"></div>
+<div id="webapps">
 
-## Get tokens from file
+## Using in WebApps
 
-The logic for retrieving tokens (`sessionToken` & `ssoToken`) from a file, created earlier by the module itself, is implemented in the `get_tokens_from_file(token_file)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py). The input and output specifications for the function are mentioned below.
+To implement the login workflow for `web applications` and `backend systems`, utilize the following modularized steps in the form of functions.
+
+<div id="webapps-get-session-token"></div>
+
+### Get Session Token
+
+Gets session token from homepage response.
 
 <table>
 <tr>
 <td> Input </td> 
 <td> 
 
-`token_file` - The file containing tokens. 
+`session` (__requests.Session__): Session object<br>
+`log` (__bool__, _optional_): Whether to enable logging
 
 </td>
 </tr>
@@ -426,25 +444,191 @@ The logic for retrieving tokens (`sessionToken` & `ssoToken`) from a file, creat
 <td> Output </td>
 <td>
 
-`sessionToken, ssoToken`
+(`str`): Session token value
+
+</td>
+</table>
+
+<div id="webapps-get-secret-question"></div>
+
+### Get Secret Question
+
+Fetches the secret question for a roll number.
+
+<table>
+<tr>
+<td> Input </td> 
+<td> 
+
+`headers` (__dict[str, str]__): Request headers<br>
+`session` (__requests.Session__): Session object<br>
+`roll_number` (__str__): Roll number<br>
+`log` (__bool__, _optional_): Whether to enable logging
 
 </td>
 </tr>
 <tr>
-<td> Usage </td>
+<td> Output </td>
 <td>
 
-```python
-import iitkgp_erp_login.erp as erp
+(`str`): The secret question text
 
-sessionToken, ssoToken = erp.get_tokens_from_file('.session_token')
-# Here, '.session_token' is the name of file contianing session tokens.
-# It must be as same as the value of 'SESSION_STORAGE_FILE', if used.
-```
+</td>
+</table>
+
+<div id="webapps-get-login-details"></div>
+
+### Get Login Details
+
+Creates login details dictionary.
+
+<table>
+<tr>
+<td> Input </td> 
+<td> 
+
+`roll_number` (__str__): User roll number 
+`password` (__str__): User password
+`secret_answer` (__str__): Answer to secret question
+`session_token` (__str__): Session token
+
+</td>
+</tr>
+<tr>
+<td> Output </td>
+<td>
+
+(`LoginDetails`): Dictionary with login credentials
+
+</td>
+</table>
+
+<div id="webapps-is-otp-required"></div>
+
+### Is OTP Required
+
+Checks if OTP is required for login based on network.
+
+<table>
+<tr>
+<td> Input </td> 
+<td> 
+
+`None`
+
+</td>
+</tr>
+<tr>
+<td> Output </td>
+<td>
+
+(`bool`): True if OTP required, False otherwise
+
+</td>
+</table>
+
+<div id="webapps-request-otp"></div>
+
+### Request OTP
+
+Requests an OTP to be sent to the user.
+
+<table>
+<tr>
+<td> Input </td> 
+<td> 
+
+`headers` (__dict[str, str]__): Request headers<br/>
+`session` (__requests.Session__): Session object<br/>
+`login_details` (__LoginDetails__): Dictionary with credentials<br/>
+`log` (__bool__, _optional_): Whether to enable logging
+
+</td>
+</tr>
+<tr>
+<td> Output </td>
+<td>
+
+`None`
+
+</td>
+</tr>
+<tr>
+<td> Raises </td>
+<td>
+
+`ErpLoginError`: If OTP request fails
 
 </td>
 </tr>
 </table>
+
+<div id="webapps-sign-in"></div>
+
+### SignIn
+
+Signs in into the ERP for the given session.
+
+<table>
+<tr>
+<td> Input </td> 
+<td> 
+
+`headers` (__dict[str, str]__): Request headers<br/>
+`session` (__requests.Session__): Session object<br/>
+`login_details` (__LoginDetails__): Dictionary with credentials<br/>
+`log` (__bool__, _optional_): Whether to enable logging
+
+</td>
+</tr>
+<tr>
+<td> Output </td>
+<td>
+
+(`str`): ssoToken extracted from the login response
+
+</td>
+</table>
+
+<div id="webapps-login-workflow-implementation">
+
+### Implementing login workflow for webapps
+
+Following is a proof of concept example to achieve the login workflow:
+
+```python
+import requests
+from flask import Flask
+import iitkgp_erp_login.erp as erp
+
+app = Flask(__name__)
+session = requests.Session()
+headers = {
+   'timeout': '20',
+   'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/51.0.2704.79 Chrome/51.0.2704.79 Safari/537.36',
+}
+
+@app.route("/login")
+def login():
+    roll = # 1. Get roll number from form inputs
+    passw = # 2. Get password from form inputs
+    sessionToken = erp.get_sessiontoken(session) # 3
+    secret_question = erp.get_secret_question(headers, session, roll) # 4
+    # 5. Display the question on the frontend
+    secret_answer = # 6. Get password from the form input
+    loginDetails = erp.get_login_details(roll, passw, secret_answer, sessionToken) # 7
+
+    # 8. Handle OTP
+    if erp.is_otp_required(): 
+        request_otp(headers=headers, session=session, login_details=login_details, log=False) # 8.1 Request OTP
+        login_details["email_otp"] = # 8.2 Get otp from form inputs
+    else:
+        print("OTP not required :yay")
+
+    ssoToken = erp.signin(headers, session, loginDetails) # 9
+
+    # ... 
+```
 
 <div id="example"></div>
 
