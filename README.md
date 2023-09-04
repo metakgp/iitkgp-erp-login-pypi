@@ -327,13 +327,17 @@ print("Logging into ERP for:", creds.ROLL_NUMBER)
 
 while True:
     if not erp.session_alive(session):
-        erp.login(headers, session, ERPCREDS=erpcreds, LOGGING=True)
+        _, ssoToken = erp.login(headers, session, ERPCREDS=erpcreds, LOGGING=True)
     else:
         print("Session is alive.")
+        ssoToken = session.cookies.get('ssoToken')
+        sessionToken = session.cookies.get('JSID#/IIT_ERP3')
+
+    # Traverse ERP further using ssoToken
 
     time.sleep(2)
 ```
-> **Note** This is merely a Proof of Concept example; this exact functionality has been integrated into the login function itself from version **2.1.0** onwards.
+> **Note** This is merely a Proof of Concept example; this exact functionality has been integrated into the login function itself from version **2.3.1** onwards.
 
 <div id="ssotoken-alive"></div>
 
