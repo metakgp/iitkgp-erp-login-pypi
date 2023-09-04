@@ -141,13 +141,16 @@ def login(
 
     # Check if the tokens imported from the file are valid and return if yes
     if ssoToken and ssotoken_valid(ssoToken):
-        if LOGGING: logging.info(" [SSOToken STATUS] >> Valid <<")
+        if LOGGING: logging.info(" [SSOToken STATUS]: Valid")
+        session.cookies.set('JSESSIONID', sessionToken, domain='erp.iitkgp.ac.in', path='/IIT_ERP3')
+        session.cookies.set('JSESSIONID', ssoToken.split(sessionToken)[0], domain='erp.iitkgp.ac.in', path='/SSOAdministration')
         session.cookies.set('ssoToken', ssoToken, domain='erp.iitkgp.ac.in')
+        session.cookies.set('JSID#/IIT_ERP3', sessionToken, domain='erp.iitkgp.ac.in')
 
         return sessionToken, ssoToken
 
     # The code below executes only if the ssoToken is invalid
-    if LOGGING and os.path.exists(token_file): logging.info(" [SSOToken STATUS] >> Not Valid <<")
+    if LOGGING and os.path.exists(token_file): logging.info(" [SSOToken STATUS]: Not Valid")
 
     if ERPCREDS != None:
         # Import credentials if passed to the function
