@@ -1,5 +1,14 @@
 # CHANGELOG
 
+ ### [2.3.1](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.0...v2.3.1) (2023-09-04)
+
+
+### Features
+
+* Adding all the cookies to session when building from file ([37dee5b](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/37dee5ba5e885809795ba8a2d3b5fe8be017ae47))
+* Integrated session alive check ([1f58545](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/1f585459074f19d512769a9ee245eb2ec6d75f56))
+
+ 
  ## [2.3.0](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.2.1...v2.3.0) (2023-08-15)
 
 
