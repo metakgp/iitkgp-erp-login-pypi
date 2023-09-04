@@ -131,17 +131,26 @@ def login(
 ):
     """Complete login workflow for the CLI."""
     global ROLL_NUMBER
+    sessionToken, ssoToken = None, None
 
-    # Getting the location of the file importing this module
+    # Check if the session is alive. If it is then extract tokens from it and return the function
+    if session_alive(session):
+        if LOGGING: logging.info(" [SESSION STATUS]: Alive")
+        ssoToken = session.cookies.get('ssoToken')
+        sessionToken = session.cookies.get('JSID#/IIT_ERP3')
+
+        return sessionToken, ssoToken
+    else:
+        if LOGGING: logging.info(" [SESSION STATUS]: Not Alive")
+
+    ## Getting the location of the file importing this module
     if len(sys.argv) == 1 and sys.argv[0] == '-c': caller_file = None
     else: caller_file = inspect.getframeinfo(inspect.currentframe().f_back).filename
-
-    # Getting the location of file containing session tokens
+    ## Getting the location of file containing session tokens
     token_file = f"{get_import_location(caller_file)}/{SESSION_STORAGE_FILE}" if SESSION_STORAGE_FILE else ""
-    # Read session tokens from the token file if it exists
+    ## Read session tokens from the token file if it exists
     if SESSION_STORAGE_FILE: sessionToken, ssoToken = get_tokens_from_file(token_file=token_file, log=LOGGING)
-    else: sessionToken, ssoToken = None, None
-    # Check if the tokens imported from the file are valid and return if yes
+    ## Check if the tokens imported from the file are valid and return if yes
     if ssoToken and ssotoken_valid(ssoToken):
         if LOGGING: logging.info(" [SSOToken STATUS]: Valid")
         session.cookies.set('JSESSIONID', sessionToken, domain='erp.iitkgp.ac.in', path='/IIT_ERP3')
@@ -150,10 +159,10 @@ def login(
         session.cookies.set('JSID#/IIT_ERP3', sessionToken, domain='erp.iitkgp.ac.in')
 
         return sessionToken, ssoToken
-    # Printing out the invalid status of SSOToken
+    ## Printing out the invalid status of SSOToken
     if LOGGING and os.path.exists(token_file): logging.info(" [SSOToken STATUS]: Not Valid")
-    # The code below executes only if the ssoToken is invalid
 
+    # The code below executes only if the session and ssoToken are not valid
     if ERPCREDS != None:
         # Import credentials if passed to the function
         ROLL_NUMBER = ERPCREDS.ROLL_NUMBER
