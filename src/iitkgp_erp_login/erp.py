@@ -36,8 +36,11 @@ class LoginDetails(TypedDict):
 
 class ErpCreds(TypedDict):
     ROLL_NUMBER: str
+    "Student Roll Number"
     PASSWORD: str
+    "ERP Password"
     SECURITY_QUESTIONS_ANSWERS: dict[str, str]
+    "Security Question"
 
 class ErpLoginError(Exception):
     pass
@@ -51,7 +54,7 @@ def get_sessiontoken(session: requests.Session, log: bool = False):
 
         if log: logging.info(" Generated sessionToken")
     except (requests.exceptions.RequestException, KeyError) as e:
-        raise ErpLoginError(f"Failed to generate session token: {str(e)}")
+        raise ErpLoginError(f"Failed to generate sessionToken: {str(e)}")
 
     return sessionToken
 
@@ -69,7 +72,8 @@ def get_secret_question(headers: dict[str, str], session: requests.Session, roll
 
 
 def get_login_details(ROLL_NUMBER: str, PASSWORD: str, secret_answer: str, sessionToken: str):
-	login_details: LoginDetails = {
+    """Returns all login details/credentials (except OTP)"""
+    login_details: LoginDetails = {
         'user_id': ROLL_NUMBER,
         'password': PASSWORD,
         'answer': secret_answer,
@@ -77,7 +81,7 @@ def get_login_details(ROLL_NUMBER: str, PASSWORD: str, secret_answer: str, sessi
         'requestedUrl': HOMEPAGE_URL,
     }
 
-	return login_details
+    return login_details
 
 
 def is_otp_required():
@@ -106,13 +110,13 @@ def signin(headers: dict[str, str], session: requests.Session, login_details: Lo
     try:
         r = session.post(LOGIN_URL, data=login_details, headers=headers)
         ssoToken = re.search(r'\?ssoToken=(.+)$', r.history[1].headers['Location']).group(1)
-
-        if ssoToken is None:
-            raise ErpLoginError(f"Failed to generate ssoToken: {str(e)}")
-
-        if log: logging.info(" Generated ssoToken")
     except (requests.exceptions.RequestException, IndexError) as e:
         raise ErpLoginError(f"ERP login failed: {str(e)}")
+
+    if ssoToken is None:
+        raise ErpLoginError(f"Failed to generate ssoToken: {str(e)}")
+    else:
+        if log: logging.info(" Generated ssoToken")
 
     if log: logging.info(" ERP login completed!")
     return ssoToken
@@ -134,11 +138,9 @@ def login(
 
     # Getting the location of file containing session tokens
     token_file = f"{get_import_location(caller_file)}/{SESSION_STORAGE_FILE}" if SESSION_STORAGE_FILE else ""
-
     # Read session tokens from the token file if it exists
     if SESSION_STORAGE_FILE: sessionToken, ssoToken = get_tokens_from_file(token_file=token_file, log=LOGGING)
     else: sessionToken, ssoToken = None, None
-
     # Check if the tokens imported from the file are valid and return if yes
     if ssoToken and ssotoken_valid(ssoToken):
         if LOGGING: logging.info(" [SSOToken STATUS]: Valid")
@@ -148,9 +150,9 @@ def login(
         session.cookies.set('JSID#/IIT_ERP3', sessionToken, domain='erp.iitkgp.ac.in')
 
         return sessionToken, ssoToken
-
-    # The code below executes only if the ssoToken is invalid
+    # Printing out the invalid status of SSOToken
     if LOGGING and os.path.exists(token_file): logging.info(" [SSOToken STATUS]: Not Valid")
+    # The code below executes only if the ssoToken is invalid
 
     if ERPCREDS != None:
         # Import credentials if passed to the function
@@ -161,10 +163,7 @@ def login(
         ROLL_NUMBER = input("Enter you Roll Number: ").strip()
         PASSWORD = getpass.getpass("Enter your ERP password: ").strip()
 
-    # Generating the sessionToken, hence initiating the login workflow
     sessionToken = get_sessiontoken(session=session, log=LOGGING)
-
-    # Get the secret question for the roll number
     secret_question = get_secret_question(headers=headers, session=session, roll_number=ROLL_NUMBER, log=LOGGING)
 
     # If the security question answers were provided, use them, else take CLI input
@@ -174,7 +173,6 @@ def login(
         print("Your secret question:", secret_question)
         secret_answer = getpass.getpass("Enter the answer to your secret question: ")
 
-    # All login details/credentials (except OTP)
     login_details = get_login_details(
         ROLL_NUMBER=ROLL_NUMBER, 
         PASSWORD=PASSWORD, 
@@ -188,7 +186,7 @@ def login(
 
         if OTP_CHECK_INTERVAL != None:
             try:
-                if LOGGING: logging.info(" Waiting for OTP...")
+                if LOGGING: logging.info(" Waiting for OTP ...")
                 otp = getOTP(OTP_CHECK_INTERVAL)
                 if LOGGING: logging.info(" Received OTP")
 
@@ -201,7 +199,6 @@ def login(
     else:
         if LOGGING: logging.info(" OTP is not required!")
 
-    # Sign in into the ERP using the login details
     ssoToken = signin(headers=headers, session=session, login_details=login_details, log=LOGGING)
 
     if SESSION_STORAGE_FILE: write_tokens_to_file(token_file=token_file, ssoToken=ssoToken, sessionToken=sessionToken, log=LOGGING)
