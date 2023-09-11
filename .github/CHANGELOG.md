@@ -1,5 +1,13 @@
 # CHANGELOG
 
+ ### [2.3.2](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.1...v2.3.2) (2023-09-11)
+
+
+### Bug Fixes
+
+* **session-check:** Bug in session and token validity check ([231eeb9](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/231eeb9e07930080a918eda8c737516d32a318a9))
+
+ 
  ### [2.3.1](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.0...v2.3.1) (2023-09-04)
 
 
