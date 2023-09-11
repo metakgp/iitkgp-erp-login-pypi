@@ -16,7 +16,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 from iitkgp_erp_login.endpoints import *
 from iitkgp_erp_login.read_mail import getOTP
-from iitkgp_erp_login.utils import get_import_location, write_tokens_to_file, get_tokens_from_file
+from iitkgp_erp_login.utils import get_import_location, write_tokens_to_file, get_tokens_from_file, populate_session_with_login_tokens
 
 ROLL_NUMBER = ""
 
@@ -131,36 +131,43 @@ def login(
 ):
     """Complete login workflow for the CLI."""
     global ROLL_NUMBER
-    sessionToken, ssoToken = None, None
 
-    # Check if the session is alive. If it is then extract tokens from it and return the function
+    # Check if the session is alive. 
+    # If it is then extract tokens from it +
+    # Remove cookies not related to login process from session object and 
+    # Finally, return the function
     if session_alive(session):
         if LOGGING: logging.info(" [SESSION STATUS]: Alive")
         ssoToken = session.cookies.get('ssoToken')
         sessionToken = session.cookies.get('JSID#/IIT_ERP3')
+        
+        populate_session_with_login_tokens(session, sessionToken, ssoToken)
 
         return sessionToken, ssoToken
     else:
         if LOGGING: logging.info(" [SESSION STATUS]: Not Alive")
 
-    ## Getting the location of the file importing this module
-    if len(sys.argv) == 1 and sys.argv[0] == '-c': caller_file = None
-    else: caller_file = inspect.getframeinfo(inspect.currentframe().f_back).filename
-    ## Getting the location of file containing session tokens
-    token_file = f"{get_import_location(caller_file)}/{SESSION_STORAGE_FILE}" if SESSION_STORAGE_FILE else ""
-    ## Read session tokens from the token file if it exists
-    if SESSION_STORAGE_FILE: sessionToken, ssoToken = get_tokens_from_file(token_file=token_file, log=LOGGING)
-    ## Check if the tokens imported from the file are valid and return if yes
-    if ssoToken and ssotoken_valid(ssoToken):
-        if LOGGING: logging.info(" [SSOToken STATUS]: Valid")
-        session.cookies.set('JSESSIONID', sessionToken, domain='erp.iitkgp.ac.in', path='/IIT_ERP3')
-        session.cookies.set('JSESSIONID', ssoToken.split(sessionToken)[0], domain='erp.iitkgp.ac.in', path='/SSOAdministration')
-        session.cookies.set('ssoToken', ssoToken, domain='erp.iitkgp.ac.in')
-        session.cookies.set('JSID#/IIT_ERP3', sessionToken, domain='erp.iitkgp.ac.in')
+    # Check if the tokens from the file are valid
+    if SESSION_STORAGE_FILE:
+        ## Getting the location of the file importing this module
+        if len(sys.argv) == 1 and sys.argv[0] == '-c': caller_file = None
+        else: caller_file = inspect.getframeinfo(inspect.currentframe().f_back).filename
+        ## Getting the location of file containing session tokens
+        token_file = f"{get_import_location(caller_file)}/{SESSION_STORAGE_FILE}"
+        if os.path.exists(token_file):
+            ## Read session tokens from the token file if it exists
+            sessionToken, ssoToken = get_tokens_from_file(token_file=token_file, log=LOGGING)
+            ## Populate the session with just obtained session tokens
+            populate_session_with_login_tokens(session, sessionToken, ssoToken)
+            ## Check if the tokens imported from the file are valid and return if yes
+            if session_alive(session):
+                if LOGGING: logging.info(" [TOKENS STATUS]: Valid")
 
-        return sessionToken, ssoToken
-    ## Printing out the invalid status of SSOToken
-    if LOGGING and os.path.exists(token_file): logging.info(" [SSOToken STATUS]: Not Valid")
+                return sessionToken, ssoToken
+            else: 
+                if LOGGING: logging.info(" [TOKENS STATUS]: Not Valid")
+        else:
+            logging.info(f" Token file doesn't exist")
 
     # The code below executes only if the session and ssoToken are not valid
     if ERPCREDS != None:
@@ -217,12 +224,7 @@ def login(
 
 def session_alive(session: requests.Session):
     """Checks if a session is alive."""
-    r = session.get(WELCOMEPAGE_URL)
-    return r.status_code == 404
+    response = session.get(WELCOMEPAGE_URL)
+    content_length = response.headers.get("Content-Length")
+    return content_length == '1034'
 
-
-def ssotoken_valid(ssoToken: str):
-    """Checks whether an SSO token is valid."""
-    response = requests.get(f"{HOMEPAGE_URL}?ssoToken={ssoToken}")
-    content_type = str(response.headers).split(',')[-1].split("'")[-2]
-    return content_type == 'text/html;charset=UTF-8'

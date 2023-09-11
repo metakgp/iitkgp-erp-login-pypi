@@ -1,6 +1,7 @@
 import os
 import sys
 import inspect
+import requests
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -8,6 +9,19 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 import logging
 logging.basicConfig(level=logging.INFO)
 
+
+def populate_session_with_login_tokens(session: requests.Session, sessionToken: str, ssoToken: str):
+    """Populates the session object with given login tokens."""
+    session.cookies.clear() # Clear all cookies from the session
+    # This is done to clear out old cookies + cookies irrelevant for login, 
+    # i.e. cookies obtained after traversing further inside ERP
+    # They will be generated later, since traversing will be part of loop - if the loop exists
+    
+    session.cookies.set('JSESSIONID', sessionToken, domain='erp.iitkgp.ac.in', path='/IIT_ERP3')
+    session.cookies.set('JSESSIONID', ssoToken.split(sessionToken)[0], domain='erp.iitkgp.ac.in', path='/SSOAdministration')
+    session.cookies.set('ssoToken', ssoToken, domain='erp.iitkgp.ac.in')
+    session.cookies.set('JSID#/IIT_ERP3', sessionToken, domain='erp.iitkgp.ac.in')
+    
 
 def write_tokens_to_file(token_file: str, sessionToken: str, ssoToken: str, log: bool):
     """Writes session tokens to the token file if present."""
