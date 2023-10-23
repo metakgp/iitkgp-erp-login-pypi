@@ -119,6 +119,7 @@ def signin(headers: dict[str, str], session: requests.Session, login_details: Lo
         if log: logging.info(" Generated ssoToken")
 
     if log: logging.info(" ERP login completed!")
+    session_alive(session)
     return ssoToken
 
 def login(
@@ -132,20 +133,6 @@ def login(
     """Complete login workflow for the CLI."""
     global ROLL_NUMBER
 
-    # Check if the session is alive. 
-    # If it is then extract tokens from it +
-    # Remove cookies not related to login process from session object and 
-    # Finally, return the function
-    if session_alive(session):
-        if LOGGING: logging.info(" [SESSION STATUS]: Alive")
-        ssoToken = session.cookies.get('ssoToken')
-        sessionToken = session.cookies.get('JSID#/IIT_ERP3')
-        
-        populate_session_with_login_tokens(session, sessionToken, ssoToken)
-
-        return sessionToken, ssoToken
-    else:
-        if LOGGING: logging.info(" [SESSION STATUS]: Not Alive")
 
     # Check if the tokens from the file are valid
     if SESSION_STORAGE_FILE:
@@ -224,7 +211,6 @@ def login(
 
 def session_alive(session: requests.Session):
     """Checks if a session is alive."""
-    response = session.get(WELCOMEPAGE_URL)
-    content_length = response.headers.get("Content-Length")
-    return content_length == '1034'
+    response = session.get(HOMEPAGE_URL)
+    return response.headers.get("Content-Type") == "text/html;charset=UTF-8"
 
