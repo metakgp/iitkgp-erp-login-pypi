@@ -145,7 +145,7 @@ def login(
             ## Read session tokens from the token file if it exists
             sessionToken, ssoToken = get_tokens_from_file(token_file=token_file, log=LOGGING)
             ## Populate the session with just obtained session tokens
-            populate_session_with_login_tokens(session, sessionToken, ssoToken)
+            populate_session_with_login_tokens(session, ssoToken)
             ## Check if the tokens imported from the file are valid and return if yes
             if session_alive(session):
                 if LOGGING: logging.info(" [TOKENS STATUS]: Valid")

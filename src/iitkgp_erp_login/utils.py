@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-def populate_session_with_login_tokens(session: requests.Session, sessionToken: str, ssoToken: str):
+def populate_session_with_login_tokens(session: requests.Session, ssoToken: str):
     """Populates the session object with given login tokens."""
     session.cookies.clear() # Clear all cookies from the session
     # This is done to clear out old cookies + cookies irrelevant for login, 
