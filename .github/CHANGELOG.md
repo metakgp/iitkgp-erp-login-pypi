@@ -1,5 +1,13 @@
 # CHANGELOG
 
+ ### [2.3.3](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.2...v2.3.3) (2023-11-16)
+
+
+### Bug Fixes
+
+* Logout after sign in resulted in false positive for session_alive() ([f84840f](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/f84840f1a1a41046e36a6b80d939921beaefb706))
+
+ 
  ### [2.3.2](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.1...v2.3.2) (2023-09-11)
 
 
