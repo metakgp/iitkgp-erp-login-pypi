@@ -7,9 +7,8 @@ __pycache__/
 dist/
 *.egg-info
 
-# Publishing Automation
-publish.sh
-test-publish.sh
+# Automation Scripts
+*.sh
 
 # Testing
 tests/
