@@ -1,6 +1,9 @@
+import logging
 import time
 import base64
 from googleapiclient.discovery import build
+import requests
+from iitkgp_erp_login.erp import LoginDetails, request_otp
 from iitkgp_erp_login.utils import generate_token
 
 SUBJECT = "OTP for Sign In in ERP Portal of IIT Kharagpur"
@@ -16,11 +19,14 @@ def getMailID(service):
     
     return None
 
-def getOTP(OTP_CHECK_INTERVAL):
+def getOTP(OTP_CHECK_INTERVAL,headers: dict[str, str], session: requests.Session, login_details: LoginDetails, log: bool = False):
     creds = generate_token()
     service = build("gmail", "v1", credentials=creds)
     
     latest_mail_id = getMailID(service)
+    request_otp(headers=headers, session=session, login_details=login_details, log=log)
+
+    if log: logging.info(" Waiting for OTP ...")
     while True:
         if (mail_id := getMailID(service)) != latest_mail_id:
             break

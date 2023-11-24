@@ -15,7 +15,6 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 from iitkgp_erp_login.endpoints import *
-from iitkgp_erp_login.read_mail import getOTP
 from iitkgp_erp_login.utils import get_import_location, write_tokens_to_file, get_tokens_from_file, populate_session_with_login_tokens
 
 ROLL_NUMBER = ""
@@ -197,12 +196,10 @@ def login(
     )
 
     # Handling OTP
-    request_otp(headers=headers, session=session, login_details=login_details, log=LOGGING)
-
     if OTP_CHECK_INTERVAL != None:
         try:
-            if LOGGING: logging.info(" Waiting for OTP ...")
-            otp = getOTP(OTP_CHECK_INTERVAL)
+            from iitkgp_erp_login.read_mail import getOTP
+            otp = getOTP(OTP_CHECK_INTERVAL, headers=headers, session=session, login_details=login_details, log=LOGGING)
             if LOGGING: logging.info(" Received OTP")
 
         except Exception as e:
