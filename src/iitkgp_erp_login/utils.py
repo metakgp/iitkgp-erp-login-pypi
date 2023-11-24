@@ -67,27 +67,27 @@ def get_import_location(caller_file: str = None):
 
 
 def generate_token():
-	"""Generates token.json from credentials.json file with readonly access to mails."""
-	if len(sys.argv) == 1 and sys.argv[0] == '-c':
-		caller_file = None
-	else:
-		caller_file = inspect.getframeinfo(inspect.currentframe().f_back.f_back.f_back).filename
-	token_path = os.path.join(get_import_location(caller_file), "token.json")
-	credentials_path = os.path.join(get_import_location(caller_file), "credentials.json")
-	scopes = [f"https://www.googleapis.com/auth/gmail.readonly"]	
+    """Generates token.json from credentials.json file with readonly access to mails."""
+    if len(sys.argv) == 1 and sys.argv[0] == '-c':
+        caller_file = None
+    else:
+        caller_file = inspect.getframeinfo(inspect.currentframe().f_back.f_back.f_back).filename
+    token_path = os.path.join(get_import_location(caller_file), "token.json")
+    credentials_path = os.path.join(get_import_location(caller_file), "credentials.json")
+    scopes = [f"https://www.googleapis.com/auth/gmail.readonly"]
 
-	creds = None
-	if os.path.exists(token_path):
-		creds = Credentials.from_authorized_user_file(token_path, scopes)	
-	if not creds or not creds.valid:
-		if creds and creds.expired and creds.refresh_token:
-			creds.refresh(Request())
-		else:
-			flow = InstalledAppFlow.from_client_secrets_file(credentials_path, scopes)
-			creds = flow.run_local_server(port=0)	
+    creds = None
+    if os.path.exists(token_path):
+        creds = Credentials.from_authorized_user_file(token_path, scopes)	
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(credentials_path, scopes)
+            creds = flow.run_local_server(port=0)	
 
-		if not os.path.exists(token_path):
-			with open(token_path, "w") as token:
-				token.write(creds.to_json())
+        if not os.path.exists(token_path):
+            with open(token_path, "w") as token:
+                token.write(creds.to_json())
 
-		return creds
+    return creds
