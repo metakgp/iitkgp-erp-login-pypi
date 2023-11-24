@@ -1,5 +1,13 @@
 # CHANGELOG
 
+ ### [2.3.4](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.3...v2.3.4) (2023-11-24)
+
+
+### Bug Fixes
+
+* **otp:** OTP is required on campus network as well ([8c97124](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/8c97124eb4bbff83978294971b36aaf6306b01ca))
+
+ 
  ### [2.3.3](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.2...v2.3.3) (2023-11-16)
 
 
