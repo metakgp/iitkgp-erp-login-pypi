@@ -196,24 +196,21 @@ def login(
         sessionToken=sessionToken
     )
 
-    # Handling OTP - whether required or not
-    if is_otp_required():
-        request_otp(headers=headers, session=session, login_details=login_details, log=LOGGING)
+    # Handling OTP
+    request_otp(headers=headers, session=session, login_details=login_details, log=LOGGING)
 
-        if OTP_CHECK_INTERVAL != None:
-            try:
-                if LOGGING: logging.info(" Waiting for OTP ...")
-                otp = getOTP(OTP_CHECK_INTERVAL)
-                if LOGGING: logging.info(" Received OTP")
+    if OTP_CHECK_INTERVAL != None:
+        try:
+            if LOGGING: logging.info(" Waiting for OTP ...")
+            otp = getOTP(OTP_CHECK_INTERVAL)
+            if LOGGING: logging.info(" Received OTP")
 
-            except Exception as e:
-                raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
-        else:
-            otp = input("Enter the OTP sent to your registered email address: ").strip()
-
-        login_details["email_otp"] = otp
+        except Exception as e:
+            raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
     else:
-        if LOGGING: logging.info(" OTP is not required!")
+        otp = input("Enter the OTP sent to your registered email address: ").strip()
+
+    login_details["email_otp"] = otp
 
     ssoToken = signin(headers=headers, session=session, login_details=login_details, log=LOGGING)
 
