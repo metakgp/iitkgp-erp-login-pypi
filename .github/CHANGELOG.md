@@ -1,5 +1,13 @@
 # CHANGELOG
 
+ ### [2.3.5](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.4...v2.3.5) (2023-11-25)
+
+
+### Bug Fixes
+
+* handling otp ([68ede04](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/68ede04e3b941e69896c26972903a68f36fa22d7))
+
+ 
  ### [2.3.4](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.3...v2.3.4) (2023-11-24)
 
 
