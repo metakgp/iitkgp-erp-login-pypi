@@ -25,8 +25,8 @@ def getOTP(OTP_CHECK_INTERVAL,headers: dict[str, str], session: requests.Session
     
     latest_mail_id = getMailID(service)
     request_otp(headers=headers, session=session, login_details=login_details, log=log)
-
     if log: logging.info(" Waiting for OTP ...")
+    
     while True:
         if (mail_id := getMailID(service)) != latest_mail_id:
             break
