@@ -76,6 +76,7 @@ def get_login_details(ROLL_NUMBER: str, PASSWORD: str, secret_answer: str, sessi
         'user_id': ROLL_NUMBER,
         'password': PASSWORD,
         'answer': secret_answer,
+        'typeee': 'SI',
         'sessionToken': sessionToken,
         'requestedUrl': HOMEPAGE_URL,
     }
@@ -91,14 +92,7 @@ def is_otp_required():
 def request_otp(headers: dict[str, str], session: requests.Session, login_details: LoginDetails, log: bool = False):
     """Requests an OTP to be sent."""
     try:
-        session.post(OTP_URL, 
-                    data={
-                        'typeee': 'SI', 
-                        'loginid': login_details["user_id"], 
-                        'pass': login_details["password"]
-                        }, 
-                    headers=headers)
-    
+        session.post(OTP_URL, data=login_details,headers=headers)
         if log: logging.info(" Requested OTP")
     except requests.exceptions.RequestException as e:
         raise ErpLoginError(f"Failed to request OTP: {str(e)}")
