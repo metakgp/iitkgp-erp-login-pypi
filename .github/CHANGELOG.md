@@ -1,5 +1,13 @@
 # CHANGELOG
 
+ ### [2.3.6](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.5...v2.3.6) (2024-03-01)
+
+
+### Bug Fixes
+
+* requires signin parameters to get OTP now ([533621b](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/533621bcefbce518467d3379880fc752a4a19474))
+
+ 
  ### [2.3.5](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.4...v2.3.5) (2023-11-25)
 
 
