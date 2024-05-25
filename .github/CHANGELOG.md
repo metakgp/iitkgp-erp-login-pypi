@@ -1,5 +1,13 @@
 # CHANGELOG
 
+ ### [2.3.7](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.6...v2.3.7) (2024-05-25)
+
+
+### Bug Fixes
+
+* request_otp() for manual login wasn't called ([#25](https://github.com/proffapt/iitkgp-erp-login-pypi/issues/25)) ([6255252](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/6255252b0624b85c8d5e0c22bb6b5182f33f21b6))
+
+ 
  ### [2.3.6](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.5...v2.3.6) (2024-03-01)
 
 
