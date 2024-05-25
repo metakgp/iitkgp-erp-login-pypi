@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "iitkgp_erp_login"
-version = "2.3.6"
+version = "2.3.7"
 authors = [
   { name="Arpit Bhardwaj", email="proffapt@pm.me" },
 ]
