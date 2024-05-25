@@ -199,6 +199,7 @@ def login(
         except Exception as e:
             raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
     else:
+        request_otp(headers=headers, session=session, login_details=login_details, log=LOGGING)
         otp = input("Enter the OTP sent to your registered email address: ").strip()
 
     login_details["email_otp"] = otp
