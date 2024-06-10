@@ -7,10 +7,10 @@ import inspect
 import requests
 from typing import TypedDict
 from bs4 import BeautifulSoup as bs
-
+import json
 import logging
 logging.basicConfig(level=logging.INFO)
-
+import errors
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -42,6 +42,10 @@ class ErpCreds(TypedDict):
     "Security Question"
 
 class ErpLoginError(Exception):
+    def __init__(self, message: str, log: bool = False):
+        super().__init__(message)
+        if log: logging.error(message)
+
     pass
 
 def get_sessiontoken(session: requests.Session, log: bool = False):
@@ -53,7 +57,7 @@ def get_sessiontoken(session: requests.Session, log: bool = False):
 
         if log: logging.info(" Generated sessionToken")
     except (requests.exceptions.RequestException, KeyError) as e:
-        raise ErpLoginError(f"Failed to generate sessionToken: {str(e)}")
+        raise ErpLoginError(f"Failed to generate sessionToken: {str(e)}", log)
 
     return sessionToken
 
@@ -62,10 +66,11 @@ def get_secret_question(headers: dict[str, str], session: requests.Session, roll
     """Fetches the secret question given the roll number."""
     try:
         r = session.post(SECRET_QUESTION_URL, data={'user_id': roll_number}, headers=headers)
-
+        if r.text == "FALSE":
+            raise ErpLoginError("Invalid Roll Number",log)
         if log: logging.info(" Fetched Security Question")
     except (requests.exceptions.RequestException, KeyError) as e:
-        raise ErpLoginError(f"Failed to fetch Security Question: {str(e)}")
+        raise ErpLoginError(f"Failed to fetch Security Question: {str(e)}",log)
 
     return r.text
 
@@ -92,22 +97,33 @@ def is_otp_required():
 def request_otp(headers: dict[str, str], session: requests.Session, login_details: LoginDetails, log: bool = False):
     """Requests an OTP to be sent."""
     try:
-        session.post(OTP_URL, data=login_details,headers=headers)
-        if log: logging.info(" Requested OTP")
+        r = session.post(OTP_URL, data=login_details,headers=headers)
+        res = json.loads(r.text)
+        match res['msg']:
+            case errors.ANSWER_MISSMATCH_ERROR:
+                raise ErpLoginError("Invalid Security Question Answer",log)
+            case errors.PASSWORD_MISSMATCH_ERROR:
+                raise ErpLoginError("Invalid Password",log)
+            case errors.OTP_SENT_MESSAGE:
+                if log: logging.info(" Requested OTP",log)
+            case _:
+                raise ErpLoginError(f"Failed to request OTP: {res['msg']}",log)
     except requests.exceptions.RequestException as e:
-        raise ErpLoginError(f"Failed to request OTP: {str(e)}")
+        raise ErpLoginError(f"Failed to request OTP: {str(e)}",log)
 
 
 def signin(headers: dict[str, str], session: requests.Session, login_details: LoginDetails, log: bool = False):
     """Logs into the ERP for the given session."""
     try:
         r = session.post(LOGIN_URL, data=login_details, headers=headers)
+        if errors.OTP_MISMATCH_ERROR  in r.text:
+            raise ErpLoginError("Invalid OTP" ,log)
         ssoToken = re.search(r'\?ssoToken=(.+)$', r.history[1].headers['Location']).group(1)
     except (requests.exceptions.RequestException, IndexError) as e:
-        raise ErpLoginError(f"ERP login failed: {str(e)}")
+        raise ErpLoginError(f"ERP login failed: {str(e)}",log)
 
     if ssoToken is None:
-        raise ErpLoginError(f"Failed to generate ssoToken: {str(e)}")
+        raise ErpLoginError(f"Failed to generate ssoToken: {str(e)}",log)
     else:
         if log: logging.info(" Generated ssoToken")
 
