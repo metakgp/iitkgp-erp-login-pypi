@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup as bs
 import json
 import logging
 logging.basicConfig(level=logging.INFO)
-import  erp_response_msg
+import erp_response_msg
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -44,7 +44,7 @@ class ErpCreds(TypedDict):
 class ErpLoginError(Exception):
     def __init__(self, message: str):
         super().__init__(message)
-        logging.error(message)
+        logging.error(f" {message}")
 
     pass
 
@@ -100,9 +100,9 @@ def request_otp(headers: dict[str, str], session: requests.Session, login_detail
         r = session.post(OTP_URL, data=login_details,headers=headers)
         res = json.loads(r.text)
         match res['msg']:
-            case erp_response_msg.ANSWER_MISSMATCH_ERROR:
+            case erp_response_msg.ANSWER_MISMATCH_ERROR:
                 raise ErpLoginError("Invalid Security Question Answer")
-            case erp_response_msg.PASSWORD_MISSMATCH_ERROR:
+            case erp_response_msg.PASSWORD_MISMATCH_ERROR:
                 raise ErpLoginError("Invalid Password")
             case erp_response_msg.OTP_SENT_MESSAGE:
                 if log: logging.info(" Requested OTP")
@@ -116,8 +116,8 @@ def signin(headers: dict[str, str], session: requests.Session, login_details: Lo
     """Logs into the ERP for the given session."""
     try:
         r = session.post(LOGIN_URL, data=login_details, headers=headers)
-        if erp_response_msg.OTP_MISSMATCH_ERROR  in r.text:
-            raise ErpLoginError("Invalid OTP")
+        if erp_response_msg.OTP_MISMATCH_ERROR  in r.text:
+           raise ErpLoginError("Invalid OTP")
         ssoToken = re.search(r'\?ssoToken=(.+)$', r.history[1].headers['Location']).group(1)
     except (requests.exceptions.RequestException, IndexError) as e:
         raise ErpLoginError(f"ERP login failed: {str(e)}")
