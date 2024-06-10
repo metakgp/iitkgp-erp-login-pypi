@@ -1,3 +1,7 @@
+from iitkgp_erp_login.utils import get_import_location, write_tokens_to_file, get_tokens_from_file, populate_session_with_login_tokens
+from iitkgp_erp_login.endpoints import *
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import iitkgp_erp_login.erp_responses as erp_responses
 import os
 import re
 import sys
@@ -7,17 +11,16 @@ import inspect
 import requests
 from typing import TypedDict
 from bs4 import BeautifulSoup as bs
+
 import json
 import logging
 logging.basicConfig(level=logging.INFO)
-import erp_response_msg
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-from iitkgp_erp_login.endpoints import *
-from iitkgp_erp_login.utils import get_import_location, write_tokens_to_file, get_tokens_from_file, populate_session_with_login_tokens
 
 ROLL_NUMBER = ""
+
 
 class LoginDetails(TypedDict):
     user_id: str
@@ -33,6 +36,7 @@ class LoginDetails(TypedDict):
     email_otp: str
     "OTP if required"
 
+
 class ErpCreds(TypedDict):
     ROLL_NUMBER: str
     "Student Roll Number"
@@ -41,12 +45,12 @@ class ErpCreds(TypedDict):
     SECURITY_QUESTIONS_ANSWERS: dict[str, str]
     "Security Question"
 
+
 class ErpLoginError(Exception):
     def __init__(self, message: str):
         super().__init__(message)
         logging.error(f" {message}")
 
-    pass
 
 def get_sessiontoken(session: requests.Session, log: bool = False):
     """Gets the session token from the response of an HTTP request."""
@@ -55,7 +59,8 @@ def get_sessiontoken(session: requests.Session, log: bool = False):
         soup = bs(r.text, 'html.parser')
         sessionToken = soup.find(id='sessionToken')['value']
 
-        if log: logging.info(" Generated sessionToken")
+        if log:
+            logging.info(" Generated sessionToken")
     except (requests.exceptions.RequestException, KeyError) as e:
         raise ErpLoginError(f"Failed to generate sessionToken: {str(e)}")
 
@@ -65,10 +70,12 @@ def get_sessiontoken(session: requests.Session, log: bool = False):
 def get_secret_question(headers: dict[str, str], session: requests.Session, roll_number: str, log: bool = False):
     """Fetches the secret question given the roll number."""
     try:
-        r = session.post(SECRET_QUESTION_URL, data={'user_id': roll_number}, headers=headers)
+        r = session.post(SECRET_QUESTION_URL, data={
+                         'user_id': roll_number}, headers=headers)
         if r.text == "FALSE":
             raise ErpLoginError("Invalid Roll Number")
-        if log: logging.info(" Fetched Security Question")
+        if log:
+            logging.info(" Fetched Security Question")
     except (requests.exceptions.RequestException, KeyError) as e:
         raise ErpLoginError(f"Failed to fetch Security Question: {str(e)}")
 
@@ -97,15 +104,16 @@ def is_otp_required():
 def request_otp(headers: dict[str, str], session: requests.Session, login_details: LoginDetails, log: bool = False):
     """Requests an OTP to be sent."""
     try:
-        r = session.post(OTP_URL, data=login_details,headers=headers)
+        r = session.post(OTP_URL, data=login_details, headers=headers)
         res = json.loads(r.text)
         match res['msg']:
-            case erp_response_msg.ANSWER_MISMATCH_ERROR:
+            case erp_responses.ANSWER_MISMATCH_ERROR:
                 raise ErpLoginError("Invalid Security Question Answer")
-            case erp_response_msg.PASSWORD_MISMATCH_ERROR:
+            case erp_responses.PASSWORD_MISMATCH_ERROR:
                 raise ErpLoginError("Invalid Password")
-            case erp_response_msg.OTP_SENT_MESSAGE:
-                if log: logging.info(" Requested OTP")
+            case erp_responses.OTP_SENT_MESSAGE:
+                if log:
+                    logging.info(" Requested OTP")
             case _:
                 raise ErpLoginError(f"Failed to request OTP: {res['msg']}")
     except requests.exceptions.RequestException as e:
@@ -116,19 +124,23 @@ def signin(headers: dict[str, str], session: requests.Session, login_details: Lo
     """Logs into the ERP for the given session."""
     try:
         r = session.post(LOGIN_URL, data=login_details, headers=headers)
-        if erp_response_msg.OTP_MISMATCH_ERROR  in r.text:
-           raise ErpLoginError("Invalid OTP")
-        ssoToken = re.search(r'\?ssoToken=(.+)$', r.history[1].headers['Location']).group(1)
+        if erp_responses.OTP_MISMATCH_ERROR in r.text:
+            raise ErpLoginError("Invalid OTP")
+        ssoToken = re.search(r'\?ssoToken=(.+)$',
+                             r.history[1].headers['Location']).group(1)
     except (requests.exceptions.RequestException, IndexError) as e:
         raise ErpLoginError(f"ERP login failed: {str(e)}")
 
     if ssoToken is None:
         raise ErpLoginError(f"Failed to generate ssoToken: {str(e)}")
     else:
-        if log: logging.info(" Generated ssoToken")
+        if log:
+            logging.info(" Generated ssoToken")
 
-    if log: logging.info(" ERP login completed!")
+    if log:
+        logging.info(" ERP login completed!")
     return ssoToken
+
 
 def login(
     headers: dict[str, str],
@@ -141,40 +153,49 @@ def login(
     """Complete login workflow for the CLI."""
     global ROLL_NUMBER
 
-    # Check if the session is alive. 
+    # Check if the session is alive.
     # If it is then extract tokens from it +
-    # Remove cookies not related to login process from session object and 
+    # Remove cookies not related to login process from session object and
     # Finally, return the function
     if session_alive(session):
-        if LOGGING: logging.info(" [SESSION STATUS]: Alive")
+        if LOGGING:
+            logging.info(" [SESSION STATUS]: Alive")
         ssoToken = session.cookies.get('ssoToken')
         sessionToken = session.cookies.get('JSID#/IIT_ERP3')
-        
+
         populate_session_with_login_tokens(session, ssoToken)
 
         return sessionToken, ssoToken
     else:
-        if LOGGING: logging.info(" [SESSION STATUS]: Not Alive")
+        if LOGGING:
+            logging.info(" [SESSION STATUS]: Not Alive")
 
     # Check if the tokens from the file are valid
     if SESSION_STORAGE_FILE:
-        ## Getting the location of the file importing this module
-        if len(sys.argv) == 1 and sys.argv[0] == '-c': caller_file = None
-        else: caller_file = inspect.getframeinfo(inspect.currentframe().f_back).filename
-        ## Getting the location of file containing session tokens
-        token_file = f"{get_import_location(caller_file)}/{SESSION_STORAGE_FILE}"
+        # Getting the location of the file importing this module
+        if len(sys.argv) == 1 and sys.argv[0] == '-c':
+            caller_file = None
+        else:
+            caller_file = inspect.getframeinfo(
+                inspect.currentframe().f_back).filename
+        # Getting the location of file containing session tokens
+        token_file = f"{get_import_location(
+            caller_file)}/{SESSION_STORAGE_FILE}"
         if os.path.exists(token_file):
-            ## Read session tokens from the token file if it exists
-            sessionToken, ssoToken = get_tokens_from_file(token_file=token_file, log=LOGGING)
-            ## Populate the session with just obtained session tokens
+            # Read session tokens from the token file if it exists
+            sessionToken, ssoToken = get_tokens_from_file(
+                token_file=token_file, log=LOGGING)
+            # Populate the session with just obtained session tokens
             populate_session_with_login_tokens(session, ssoToken)
-            ## Check if the tokens imported from the file are valid and return if yes
+            # Check if the tokens imported from the file are valid and return if yes
             if session_alive(session):
-                if LOGGING: logging.info(" [TOKENS STATUS]: Valid")
+                if LOGGING:
+                    logging.info(" [TOKENS STATUS]: Valid")
 
                 return sessionToken, ssoToken
-            else: 
-                if LOGGING: logging.info(" [TOKENS STATUS]: Not Valid")
+            else:
+                if LOGGING:
+                    logging.info(" [TOKENS STATUS]: Not Valid")
         else:
             logging.info(f" Token file doesn't exist")
 
@@ -189,19 +210,21 @@ def login(
         PASSWORD = getpass.getpass("Enter your ERP password: ").strip()
 
     sessionToken = get_sessiontoken(session=session, log=LOGGING)
-    secret_question = get_secret_question(headers=headers, session=session, roll_number=ROLL_NUMBER, log=LOGGING)
+    secret_question = get_secret_question(
+        headers=headers, session=session, roll_number=ROLL_NUMBER, log=LOGGING)
 
     # If the security question answers were provided, use them, else take CLI input
     if ERPCREDS != None:
         secret_answer = ERPCREDS.SECURITY_QUESTIONS_ANSWERS[secret_question]
     else:
         print("Your secret question:", secret_question)
-        secret_answer = getpass.getpass("Enter the answer to your secret question: ")
+        secret_answer = getpass.getpass(
+            "Enter the answer to your secret question: ")
 
     login_details = get_login_details(
-        ROLL_NUMBER=ROLL_NUMBER, 
-        PASSWORD=PASSWORD, 
-        secret_answer=secret_answer, 
+        ROLL_NUMBER=ROLL_NUMBER,
+        PASSWORD=PASSWORD,
+        secret_answer=secret_answer,
         sessionToken=sessionToken
     )
 
@@ -209,20 +232,27 @@ def login(
     if OTP_CHECK_INTERVAL != None:
         try:
             from iitkgp_erp_login.read_mail import getOTP
-            otp = getOTP(OTP_CHECK_INTERVAL, headers=headers, session=session, login_details=login_details, log=LOGGING)
-            if LOGGING: logging.info(" Received OTP")
+            otp = getOTP(OTP_CHECK_INTERVAL, headers=headers,
+                         session=session, login_details=login_details, log=LOGGING)
+            if LOGGING:
+                logging.info(" Received OTP")
 
         except Exception as e:
             raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
     else:
-        request_otp(headers=headers, session=session, login_details=login_details, log=LOGGING)
-        otp = input("Enter the OTP sent to your registered email address: ").strip()
+        request_otp(headers=headers, session=session,
+                    login_details=login_details, log=LOGGING)
+        otp = input(
+            "Enter the OTP sent to your registered email address: ").strip()
 
     login_details["email_otp"] = otp
 
-    ssoToken = signin(headers=headers, session=session, login_details=login_details, log=LOGGING)
+    ssoToken = signin(headers=headers, session=session,
+                      login_details=login_details, log=LOGGING)
 
-    if SESSION_STORAGE_FILE: write_tokens_to_file(token_file=token_file, ssoToken=ssoToken, sessionToken=sessionToken, log=LOGGING)
+    if SESSION_STORAGE_FILE:
+        write_tokens_to_file(token_file=token_file, ssoToken=ssoToken,
+                             sessionToken=sessionToken, log=LOGGING)
 
     return sessionToken, ssoToken
 
@@ -232,4 +262,3 @@ def session_alive(session: requests.Session):
     response = session.get(WELCOMEPAGE_URL)
     content_length = response.headers.get("Content-Length")
     return content_length == '1034'
-
