@@ -4,16 +4,18 @@ from datetime import datetime, timedelta
 from threading import Timer
 import erp
 import requests
+
 # Constants
 SECRET_KEY = 'your_secret_key'  # Use a secure secret key for JWT
-
+HEADERS = {
+                'timeout': '20',
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/51.0.2704.79 Chrome/51.0.2704.79 Safari/537.36'
+            }
 class Session:
     def __init__(self):
-        self.requests_session =  requests.Session()  # Initialize this as per your actual Session implementation
+        self.requests_session =  requests.Session()  
         self.session_token = None
-        self.login_details = None
         self.sso_token = None
-        
         self.timestamp = datetime.now()
 
 class SessionManager:
@@ -27,10 +29,7 @@ class SessionManager:
     def __init__(self, headers: Dict[str, str] = None, secret_key: str = None):
         if not hasattr(self, 'initialized'):  # To ensure __init__ is called only once
             self.sessions = {}
-            self.headers = headers or {
-                'timeout': '20',
-                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/51.0.2704.79 Chrome/51.0.2704.79 Safari/537.36'
-            }
+            self.headers = headers or HEADERS
             self.secret_key = secret_key or SECRET_KEY
             self.initialized = True
             self.cleanup_sessions()
@@ -38,7 +37,7 @@ class SessionManager:
     def generate_jwt(self, roll):
         payload = {
             'roll': roll,
-            'exp': datetime.utcnow() + timedelta(minutes=30)  # Token expiration time
+            'exp': datetime.now() + timedelta(minutes=30)  # Token expiration time
         }
         token = jwt.encode(payload, self.secret_key, algorithm='HS256')
         return token
@@ -62,8 +61,7 @@ class SessionManager:
         roll = self.verify_jwt(token)
         session = self.sessions.get(token)
         if not session:
-            session = Session()
-            self.sessions[token] = session
+            raise ValueError(f"No session found for token")
         
         session_token = erp.get_sessiontoken(session.requests_session)
         session.session_token = session_token
@@ -77,18 +75,24 @@ class SessionManager:
             raise ValueError(f"No session found for token")
 
         login_details = erp.get_login_details(roll, passw, secret_answer, session.session_token)
-        
-        session.login_details = login_details
+       
         erp.request_otp(self.headers, session.requests_session, login_details)
 
-    def establish_erp_session(self, token, email_otp):
+    def establish_erp_session(self, token,password, answer, email_otp):
         roll = self.verify_jwt(token)
         session = self.sessions.get(token)
         if not session or not session.login_details:
             raise ValueError(f"No login details found for token")
-
-        session.login_details["email_otp"] = email_otp
-        sso_token = erp.signin(self.headers, session.requests_session, session.login_details)
+        login_details = erp.LoginDetails(
+            user_id=roll,
+            password=password,
+            answer=answer,
+            typeee='SI',
+            sessionToken=session.session_token,
+            requestedUrl=erp.HOMEPAGE_URL,
+            email_otp=email_otp
+        )
+        sso_token = erp.signin(self.headers, session.requests_session, login_details)
         session.sso_token = sso_token
         return session
 
