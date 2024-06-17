@@ -16,7 +16,7 @@ class Session:
         self.requests_session =  requests.Session()  
         self.session_token = None
         self.sso_token = None
-        self.timestamp = datetime.now()
+        self.last_acccessed = datetime.now()
 
 class SessionManager:
     _instance = None
@@ -112,7 +112,7 @@ class SessionManager:
     def cleanup_sessions(self):
         now = datetime.now()
         expired_sessions = [token for token, session in self.sessions.items()
-                            if now - session.timestamp > timedelta(minutes=10)]
+                            if now - session.last_acccessed > timedelta(minutes=10)]
         for token in expired_sessions:
             del self.sessions[token]
         # Schedule the next cleanup in 10 minutes
