@@ -1,3 +1,4 @@
+from math import log
 import requests
 import jwt as jwt_gen
 from threading import Timer
@@ -79,25 +80,25 @@ class SessionManager:
         if jwt in self.user_sessions_dict:
             del self.user_sessions_dict[jwt]
 
-    def get_secret_question(self, roll_number: str) -> Tuple[str, str]:
+    def get_secret_question(self, roll_number: str, log: bool = True) -> Tuple[str, str]:
         jwt, user_session = self.__create_session(roll_number)
 
         user_session.session_token = erp.get_sessiontoken(
-            user_session.erp_session)
+            user_session.erp_session, log)
         secret_question = erp.get_secret_question(
-            self.headers, user_session.erp_session, roll_number)
+            self.headers, user_session.erp_session, roll_number, log)
 
         return secret_question, jwt
 
-    def request_otp(self, jwt: str, password: str, secret_answer: str) -> None:
+    def request_otp(self, jwt: str, password: str, secret_answer: str, log: bool = True) -> None:
         roll_number, user_session = self.__get_session(jwt)
 
         login_details = erp.get_login_details(
             roll_number, password, secret_answer, user_session.session_token)
 
-        erp.request_otp(self.headers, user_session.erp_session, login_details)
+        erp.request_otp(self.headers, user_session.erp_session, login_details, log)
 
-    def login(self, jwt: str, password: str, secret_answer: str, otp: str) -> None:
+    def login(self, jwt: str, password: str, secret_answer: str, otp: str, log: bool = True) -> None:
         roll_number, user_session = self.__get_session(jwt)
 
         login_details = erp.get_login_details(
@@ -109,7 +110,7 @@ class SessionManager:
         login_details["email_otp"] = otp
 
         user_session.sso_token = erp.signin(
-            self.headers, user_session.erp_session, login_details)
+            self.headers, user_session.erp_session, login_details, log)
 
     def request(self, jwt: str, url: str, method: Literal['GET', 'POST', 'PUT', 'DELETE'] = 'GET', **kwargs) -> requests.Response:
         _, user_session = self.__get_session(jwt)
