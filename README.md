@@ -10,7 +10,8 @@ Key Features:
 - Smart Token Storage for Efficiency
 - Supports both CLI & WebApps
 
-> **Note** This package is not officially affiliated with IIT Kharagpur.
+> [!Note]
+> This package is not officially affiliated with IIT Kharagpur.
 
 https://github.com/proffapt/iitkgp-erp-login-pypi/assets/86282911/c0401f6a-80af-46ae-8a8f-ac735f0e67b5
 > Guess the number of lines of python code it will take you to achieve this.
@@ -31,12 +32,6 @@ https://github.com/proffapt/iitkgp-erp-login-pypi/assets/86282911/c0401f6a-80af-
 	- <a href="#session-alive-output">Output</a>
 	- <a href="#session-alive-usage">Usage</a>
 - <a href="#webapps">Using in WebApps</a>
-    - <a href="#webapps-get-session-token">Get Session Token</a>
-    - <a href="#webapps-get-secret-question">Get Secret Question</a>
-    - <a href="#webapps-get-login-details">Get Login Details</a>
-    - <a href="#webapps-is-otp-required">Is OTP Required</a>
-    - <a href="#webapps-request-otp">Request OTP</a>
-    - <a href="#webapps-sign-in">Sign In</a>
     - <a href="#implementing-login-workflow-for-webapps">Implementing Login workflow</a>
 - <a href="#example">Example</a>
 
@@ -78,7 +73,8 @@ print(LOGIN_URL)
 
 ERP login workflow is implemented in `login(headers, session, ERPCREDS=None, OTP_CHECK_INTERVAL=None, LOGGING=False, SESSION_STORAGE_FILE=None)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py).
 
-> **Note** This function currently compiles the login workflow "ONLY for the CLI", not for web apps.
+> [!Note] 
+> This function currently compiles the login workflow "ONLY for the CLI", not for web apps.
 
 <div id="login-input"></div>
 
@@ -113,7 +109,8 @@ The function can also be provided with these _optional_ arguments:
     | NOT Specified | The user is prompted to enter their credentials manually |
     | Specified (`ERPCREDS=erpcreds`) | The credentials are retrieved from the `erpcreds.py` file |
 
-    > **Note** Here, `credentials` refer to the roll number, password, and security question.
+    > [!Note]
+    > Here, `credentials` refer to the roll number, password, and security question.
 
     <details>
       <summary><b>Prerequisites - ERP credentials file</b></summary>
@@ -150,7 +147,8 @@ The function can also be provided with these _optional_ arguments:
     The token file **MUST** be present in the same directory as the script where `iitkgp_erp_login` module is being imported.
 
     1. Follow the steps in the [Gmail API - Python Quickstart](https://developers.google.com/gmail/api/quickstart/python) guide to obtain `credentials.json` file.
-       > **Note** The `credentials.json` file is permanent unless you manually delete its reference in your Google Cloud Console.
+       > [!Note]
+       > The `credentials.json` file is permanent unless you manually delete its reference in your Google Cloud Console.
 
     2. To generate the `token.json` file, follow the steps below:
         - Import this module
@@ -185,7 +183,8 @@ The function can also be provided with these _optional_ arguments:
     | NOT Specified | The session tokens will not be stored in a file |
     | Specified (`SESSION_STORAGE_FILE=".session"`) | The session tokens will be stored in `.session` file for later direct usage |
 
-    > **Note** The approximate expiry time for `ssoToken` is _~30 minutes_ and that of `session` object is _~2.5 hours_
+    > [!Note] 
+    > The approximate expiry time for `ssoToken` is _~30 minutes_ and that of `session` object is _~2.5 hours_
 
 <div id="login-output"></div>
 
@@ -255,7 +254,8 @@ sessionToken, ssoToken = erp.login(headers, session, ERPCREDS=erpcreds, OTP_CHEC
 # Credentials: Automatic - from erpcreds.py | OTP: Automatic - checked every 2 seconds | Logging: Yes | TokenStorage: in .session file
 ```
 
-> **Note** These are just examples of how to use the _login_ function, not satisfying the prerequisites.
+> [!Note] 
+> These are just examples of how to use the _login_ function, not satisfying the prerequisites.
 >> Some arguments of `login()` have their own prerequisites that must be satisfied in order to use them. See <a href="#login-input">"Input" section of login</a> for complete details.
 
 <div id="session-alive"></div>
@@ -333,218 +333,180 @@ while True:
 
     time.sleep(2)
 ```
-> **Note** This is merely a Proof of Concept example; this exact functionality has been integrated into the login function itself from version **2.3.1** onwards.
+> [!Note] 
+> This is merely a Proof of Concept example; this exact functionality has been integrated into the login function itself from version **2.3.1** onwards.
 
 <div id="webapps">
 
 ## Using in WebApps
 
-To implement the login workflow for `web applications` and `backend systems`, utilize the following modularized steps in the form of functions.
+To implement the login workflow for `web applications` and `backend systems`, utilize the [session_manager](./src/iitkgp_erp_login/session_manager.py) module.
 
-<div id="webapps-get-session-token"></div>
-
-### Get Session Token
-
-Gets session token from homepage response.
-
-<table>
-<tr>
-<td> Input </td> 
-<td> 
-
-`session` (__requests.Session__): Session object<br>
-`log` (__bool__, _optional_): Whether to enable logging
-
-</td>
-</tr>
-<tr>
-<td> Output </td>
-<td>
-
-(`str`): Session token value
-
-</td>
-</table>
-
-<div id="webapps-get-secret-question"></div>
-
-### Get Secret Question
-
-Fetches the secret question for a roll number.
-
-<table>
-<tr>
-<td> Input </td> 
-<td> 
-
-`headers` (__dict[str, str]__): Request headers<br>
-`session` (__requests.Session__): Session object<br>
-`roll_number` (__str__): Roll number<br>
-`log` (__bool__, _optional_): Whether to enable logging
-
-</td>
-</tr>
-<tr>
-<td> Output </td>
-<td>
-
-(`str`): The secret question text
-
-</td>
-</table>
-
-<div id="webapps-get-login-details"></div>
-
-### Get Login Details
-
-Creates login details dictionary.
-
-<table>
-<tr>
-<td> Input </td> 
-<td> 
-
-`roll_number` (__str__): User roll number 
-`password` (__str__): User password
-`secret_answer` (__str__): Answer to secret question
-`session_token` (__str__): Session token
-
-</td>
-</tr>
-<tr>
-<td> Output </td>
-<td>
-
-(`LoginDetails`): Dictionary with login credentials
-
-</td>
-</table>
-
-<div id="webapps-is-otp-required"></div>
-
-### Is OTP Required
-
-Checks if OTP is required for login based on network.
-
-<table>
-<tr>
-<td> Input </td> 
-<td> 
-
-`None`
-
-</td>
-</tr>
-<tr>
-<td> Output </td>
-<td>
-
-(`bool`): True if OTP required, False otherwise
-
-</td>
-</table>
-
-<div id="webapps-request-otp"></div>
-
-### Request OTP
-
-Requests an OTP to be sent to the user.
-
-<table>
-<tr>
-<td> Input </td> 
-<td> 
-
-`headers` (__dict[str, str]__): Request headers<br/>
-`session` (__requests.Session__): Session object<br/>
-`login_details` (__LoginDetails__): Dictionary with credentials<br/>
-`log` (__bool__, _optional_): Whether to enable logging
-
-</td>
-</tr>
-<tr>
-<td> Output </td>
-<td>
-
-`None`
-
-</td>
-</tr>
-<tr>
-<td> Raises </td>
-<td>
-
-`ErpLoginError`: If OTP request fails
-
-</td>
-</tr>
-</table>
-
-<div id="webapps-sign-in"></div>
-
-### SignIn
-
-Signs in into the ERP for the given session.
-
-<table>
-<tr>
-<td> Input </td> 
-<td> 
-
-`headers` (__dict[str, str]__): Request headers<br/>
-`session` (__requests.Session__): Session object<br/>
-`login_details` (__LoginDetails__): Dictionary with credentials<br/>
-`log` (__bool__, _optional_): Whether to enable logging
-
-</td>
-</tr>
-<tr>
-<td> Output </td>
-<td>
-
-(`str`): ssoToken extracted from the login response
-
-</td>
-</table>
-
-<div id="webapps-login-workflow-implementation">
+<div id="implementing-login-workflow-for-webapps"></div>
 
 ### Implementing login workflow for webapps
 
 Following is a proof of concept example to achieve the login workflow:
 
 ```python
-import requests
-from flask import Flask
-import iitkgp_erp_login.erp as erp
+import logging
+from flask_cors import CORS
+from flask import Flask, request, jsonify
+from iitkgp_erp_login import session_manager
+
 
 app = Flask(__name__)
-session = requests.Session()
+CORS(app)
+
+jwt_secret_key = "top-secret-unhackable-key"
 headers = {
-   'timeout': '20',
-   'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/51.0.2704.79 Chrome/51.0.2704.79 Safari/537.36',
+    'timeout': '20',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/51.0.2704.79 Chrome/51.0.2704.79 Safari/537.36',
 }
 
-@app.route("/login")
-def login():
-    roll = # 1. Get roll number from form inputs
-    passw = # 2. Get password from form inputs
-    sessionToken = erp.get_sessiontoken(session) # 3
-    secret_question = erp.get_secret_question(headers, session, roll) # 4
-    # 5. Display the question on the frontend
-    secret_answer = # 6. Get password from the form input
-    loginDetails = erp.get_login_details(roll, passw, secret_answer, sessionToken) # 7
+session_manager = session_manager.SessionManager(
+    jwt_secret_key=jwt_secret_key, headers=headers)
 
-    # 8. Handle OTP
-    if erp.is_otp_required(): 
-        request_otp(headers=headers, session=session, login_details=login_details, log=False) # 8.1 Request OTP
-        login_details["email_otp"] = # 8.2 Get otp from form inputs
+
+class ErpResponse:
+    def __init__(self, success: bool, message: str = None, data: dict = None, status_code: int = 200):
+        self.success = success
+        self.message = message
+        self.data = data or {}
+        self.status_code = status_code
+
+        if not success:
+            logging.error(f" {message}")
+
+    def to_dict(self):
+        response = {
+            "status": "success" if self.success else "error",
+            "message": self.message
+        }
+        if self.data:
+            response.update(self.data)
+        return response
+
+    def to_response(self):
+        return jsonify(self.to_dict()), self.status_code
+
+
+def handle_auth() -> ErpResponse:
+    if "Authorization" in request.headers:
+        header = request.headers["Authorization"].split(" ")
+        if len(header) == 2:
+            return ErpResponse(True, data={
+                "jwt": header[1]
+            }).to_response()
+        else:
+            return ErpResponse(False, "Poorly formatted authorization header. Should be of format 'Bearer <token>'", status_code=401).to_response()
     else:
-        print("OTP not required :yay")
+        return ErpResponse(False, "Authentication token not provided", status_code=401).to_response()
 
-    ssoToken = erp.signin(headers, session, loginDetails) # 9
 
-    # ... 
+@app.route("/secret-question", methods=["POST"])
+def get_secret_question():
+    try:
+        data = request.form
+        roll_number = data.get("roll_number")
+        if not roll_number:
+            return ErpResponse(False, "Roll Number not provided", status_code=400).to_response()
+
+        secret_question, jwt = session_manager.get_secret_question(
+            roll_number)
+        return ErpResponse(True, data={
+            "secret_question": secret_question,
+            "jwt": jwt
+        }).to_response()
+    except Exception as e:
+        return ErpResponse(False, str(e), status_code=500).to_response()
+
+
+@app.route("/request-otp", methods=["POST"])
+def request_otp():
+    try:
+        jwt = None
+        auth_resp, status_code = handle_auth()
+        if status_code != 200:
+            return auth_resp, status_code
+        else:
+            jwt = auth_resp.get_json().get("jwt")
+
+        password = request.form.get("password")
+        secret_answer = request.form.get("secret_answer")
+        if not all([password, secret_answer]):
+            return ErpResponse(False, "Missing password or secret answer", status_code=400).to_response()
+
+        session_manager.request_otp(jwt, password, secret_answer)
+        return ErpResponse(True, message="OTP has been sent to your connected email accounts").to_response()
+    except Exception as e:
+        return ErpResponse(False, str(e), status_code=500).to_response()
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    try:
+        jwt = None
+        auth_resp, status_code = handle_auth()
+        if status_code != 200:
+            return auth_resp, status_code
+        else:
+            jwt = auth_resp.get_json().get("jwt")
+
+        password = request.form.get("password")
+        secret_answer = request.form.get("secret_answer")
+        otp = request.form.get("otp")
+        if not all([secret_answer, password, otp]):
+            return ErpResponse(False, "Missing password, secret answer or otp", status_code=400).to_response()
+
+        session_manager.login(jwt, password, secret_answer, otp)
+        return ErpResponse(True, message="Logged in to ERP").to_response()
+    except Exception as e:
+        return ErpResponse(False, str(e), status_code=500).to_response()
+
+
+@app.route("/logout", methods=["GET"])
+def logout():
+    try:
+        jwt = None
+        auth_resp, status_code = handle_auth()
+        if status_code != 200:
+            return auth_resp, status_code
+        else:
+            jwt = auth_resp.get_json().get("jwt")
+
+        session_manager.end_session(jwt=jwt)
+
+        return ErpResponse(True, message="Logged out of ERP").to_response()
+    except Exception as e:
+        return ErpResponse(False, str(e), status_code=500).to_response()
+
+
+@app.route("/timetable", methods=["POST"])
+def timetable():
+    try:
+        jwt = None
+        auth_resp, status_code = handle_auth()
+        if status_code != 200:
+            return auth_resp, status_code
+        else:
+            jwt = auth_resp.get_json().get("jwt")
+
+        _, ssoToken = session_manager.get_erp_session(jwt=jwt)
+
+        ERP_TIMETABLE_URL = "https://erp.iitkgp.ac.in/Acad/student/view_stud_time_table.jsp"
+        data = {
+            "ssoToken": ssoToken,
+            "module_id": '16',
+            "menu_id": '40',
+        }
+        r = session_manager.request(
+            jwt=jwt, method='POST', url=ERP_TIMETABLE_URL, headers=headers, data=data)
+        return ErpResponse(True, data={
+            "status_code": r.status_code
+        }).to_response()
+    except Exception as e:
+        return ErpResponse(False, str(e), status_code=500).to_response()
 ```
 
 <div id="example"></div>
