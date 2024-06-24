@@ -1,5 +1,20 @@
 # CHANGELOG
 
+ ## [2.4.0](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.7...v2.4.0) (2024-06-24)
+
+
+### Features
+
+* added erp package logging in api ([aad8d00](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/aad8d004a46b64244ba7bdf3367d9d625a617b5a))
+* **format:** prettier ([f24fb23](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/f24fb239b417d4b310340d5aa63bc09b2605ec9e))
+* improved code quality ([8e1ba6b](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/8e1ba6b37cb1b486616945ce98aacfa788c11e0f))
+
+
+### Bug Fixes
+
+* it works now :) ([aec6b9b](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/aec6b9be9cbd9597d7942d7e1c3351dc8efc0278))
+
+ 
  ### [2.3.7](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.6...v2.3.7) (2024-05-25)
 
 
