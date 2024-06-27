@@ -179,8 +179,7 @@ def login(
             caller_file = inspect.getframeinfo(
                 inspect.currentframe().f_back).filename
         # Getting the location of file containing session tokens
-        token_file = f"{get_import_location(
-            caller_file)}/{SESSION_STORAGE_FILE}"
+        token_file = f"{get_import_location(caller_file)}/{SESSION_STORAGE_FILE}"
         if os.path.exists(token_file):
             # Read session tokens from the token file if it exists
             sessionToken, ssoToken = get_tokens_from_file(
