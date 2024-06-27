@@ -1,5 +1,13 @@
 # CHANGELOG
 
+ ### [2.4.1](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.4.0...v2.4.1) (2024-06-27)
+
+
+### Bug Fixes
+
+* import file location error ([d8eb455](https://github.com/proffapt/iitkgp-erp-login-pypi/commit/d8eb455825f3cbeb530255675cb9f722d99a815b))
+
+ 
  ## [2.4.0](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.3.7...v2.4.0) (2024-06-24)
 
 
