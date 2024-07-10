@@ -7,8 +7,7 @@ __pycache__/
 dist/
 *.egg-info
 
-# Automation Scripts
-*.sh
-
-# Testing
-tests/
+# Creds and tokens
+*.json
+erpcreds.py
+.session
