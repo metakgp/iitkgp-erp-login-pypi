@@ -138,8 +138,7 @@ def timetable():
 
         session = requests.Session()
         erp_utils.populate_session_with_login_tokens(session, ssoToken)
-        r = erp_utils.request(session, method='POST',
-                              url=ERP_TIMETABLE_URL, headers=headers, data=data)
+        r = session.post(headers=headers, url=ERP_TIMETABLE_URL, data=data)
 
         return ErpResponse(True, data={
             "status_code": r.status_code,

@@ -11,16 +11,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-def request(session: requests.Session, url: str, method: Literal['GET', 'POST', 'PUT', 'DELETE'] = 'GET', **kwargs) -> requests.Response:
-    try:
-        response = session.request(method=method, url=url, **kwargs)
-
-        return response
-    except requests.exceptions.RequestException as e:
-        raise Exception(
-            f"Failed to request ERP endpoint ({url}): {str(e)}")
-
-
 def get_cookie(session: requests.Session, cookie_name: str, **kwargs):
     """Gets the session object with given cookie."""
     return session.cookies.get(cookie_name, **kwargs)
