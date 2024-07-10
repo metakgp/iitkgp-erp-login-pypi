@@ -18,10 +18,7 @@ classifiers = [
 ]
 dependencies = [
   "bs4",
-  "flask",
-  "ping3",
   "requests",
-  "flask_cors",
   "google-auth",
   "google-auth-oauthlib",
   "google-auth-httplib2",

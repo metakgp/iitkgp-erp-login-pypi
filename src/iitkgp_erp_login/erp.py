@@ -5,7 +5,6 @@ import iitkgp_erp_login.erp_responses as erp_responses
 import os
 import re
 import sys
-import ping3
 import getpass
 import inspect
 import requests
@@ -94,11 +93,6 @@ def get_login_details(ROLL_NUMBER: str, PASSWORD: str, secret_answer: str, sessi
     }
 
     return login_details
-
-
-def is_otp_required():
-    """Checks whether the request is run from the campus network (OTP not required) or not."""
-    return not ping3.ping("iitkgp.ac.in")
 
 
 def request_otp(headers: dict[str, str], session: requests.Session, login_details: LoginDetails, log: bool = False):
