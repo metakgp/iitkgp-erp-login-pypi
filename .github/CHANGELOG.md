@@ -1,5 +1,23 @@
 # CHANGELOG
 
+ ### [2.4.2](https://github.com/metakgp/iitkgp-erp-login-pypi/compare/v2.4.1...v2.4.2) (2024-07-10)
+
+
+### Features
+
+* add basic testing workflow ([56bf5d6](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/56bf5d6dcd9d5cba1ec3a4fdf50177f209a43f64))
+* added simpler webapp workflow; removed session_manager ([bd8e509](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/bd8e509299eae23f65b528f62f26d27290fee2b0))
+* request erp endpoint ([42ebbfa](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/42ebbfa96453a5c8dc36acce54eaec885e888c99))
+* update pipeline creds ([56b87a7](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/56b87a78570c46e017cc35853aa378931701ddaf))
+
+
+### Bug Fixes
+
+* null message ([4cee6a6](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/4cee6a681e24901c4ccb7b4e795fb04ca9524fbb))
+* removed is_otp_required() ([5c30733](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/5c307336e5a655f38adf6329ebee393af47108d5))
+* use session object to make requests ([c5c5100](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/c5c5100394d9894683346726a9b33457150f8039))
+
+ 
  ### [2.4.1](https://github.com/proffapt/iitkgp-erp-login-pypi/compare/v2.4.0...v2.4.1) (2024-06-27)
 
 
