@@ -1,8 +1,8 @@
 import logging
 import requests
 import iitkgp_erp_login.erp as erp
-import iitkgp_erp_login.utils as erp_utils
 from flask import Flask, request, jsonify
+import iitkgp_erp_login.utils as erp_utils
 
 app = Flask(__name__)
 
@@ -71,14 +71,15 @@ def request_otp():
         if not all([roll_number, password, secret_answer]):
             return ErpResponse(False, "Missing roll_number or password or secret answer", status_code=400).to_response()
 
-        session = requests.Session()
-        erp_utils.set_cookie(session, 'JSESSIONID', sessionToken)
         login_details = erp.get_login_details(
             ROLL_NUMBER=roll_number,
             PASSWORD=password,
             secret_answer=secret_answer,
             sessionToken=sessionToken
         )
+
+        session = requests.Session()
+        erp_utils.set_cookie(session, 'JSESSIONID', sessionToken)
         erp.request_otp(headers=headers, session=session,
                         login_details=login_details, log=True)
 
