@@ -2,6 +2,7 @@ import os
 import sys
 import inspect
 import requests
+from typing import Literal
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -9,9 +10,21 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 import logging
 logging.basicConfig(level=logging.INFO)
 
+
+def request(session: requests.Session, url: str, method: Literal['GET', 'POST', 'PUT', 'DELETE'] = 'GET', **kwargs) -> requests.Response:
+    try:
+        response = session.request(method=method, url=url, **kwargs)
+
+        return response
+    except requests.exceptions.RequestException as e:
+        raise Exception(
+            f"Failed to request ERP endpoint ({url}): {str(e)}")
+
+
 def get_cookie(session: requests.Session, cookie_name: str, **kwargs):
     """Gets the session object with given cookie."""
     return session.cookies.get(cookie_name, **kwargs)
+
 
 def set_cookie(session: requests.Session, cookie_name: str, cookie_value: str, **kwargs):
     """Sets the session object with given cookie."""

@@ -44,11 +44,10 @@ def get_secret_question():
             return ErpResponse(False, "Roll Number not provided", status_code=400).to_response()
 
         session = requests.Session()
-        secret_question = erp.get_secret_question(
-            headers=headers, session=session, roll_number=roll_number, log=True)
+        secret_question = erp.get_secret_question(headers=headers, session=session, roll_number=roll_number, log=True)
         sessionToken = erp_utils.get_cookie(session, 'JSESSIONID')
 
-        return ErpResponse(True, message="ERP Login Completed!" data={
+        return ErpResponse(True, message="ERP Login Completed!", data={
             "SECRET_QUESTION": secret_question,
             "SESSION_TOKEN": sessionToken
         }).to_response()
@@ -59,9 +58,9 @@ def get_secret_question():
 @app.route("/request-otp", methods=["POST"])
 def request_otp():
     try:
-        sessionToken = request.headers["SessionToken"]
+        sessionToken = request.headers["Session-Token"]
         if not sessionToken:
-            return ErpResponse(False, "sessionToken header not found", status_code=400).to_response()
+            return ErpResponse(False, "Session-Token header not found", status_code=400).to_response()
 
         data = request.form
         roll_number = data.get("roll_number")
@@ -78,8 +77,7 @@ def request_otp():
             secret_answer=secret_answer,
             sessionToken=sessionToken
         )
-        erp.request_otp(headers=headers, session=session,
-                        login_details=login_details, log=True)
+        erp.request_otp(headers=headers, session=session, login_details=login_details, log=True)
 
         return ErpResponse(True, message="OTP has been sent to your connected email accounts").to_response()
     except Exception as e:
@@ -89,9 +87,9 @@ def request_otp():
 @app.route("/login", methods=["POST"])
 def login():
     try:
-        sessionToken = request.headers["SessionToken"]
+        sessionToken = request.headers["Session-Token"]
         if not sessionToken:
-            return ErpResponse(False, "sessionToken header not found", status_code=400).to_response()
+            return ErpResponse(False, "Session-Token header not found", status_code=400).to_response()
 
         data = request.form
         roll_number = data.get("roll_number")
@@ -111,11 +109,35 @@ def login():
 
         session = requests.Session()
         erp_utils.set_cookie(session, 'JSESSIONID', sessionToken)
-        ssoToken = erp.signin(headers=headers, session=session,
-                              login_details=login_details, log=True)
+        ssoToken = erp.signin(headers=headers, session=session, login_details=login_details, log=True)
 
         return ErpResponse(True, data={
             "ssoToken": ssoToken
+        }).to_response()
+    except Exception as e:
+        return ErpResponse(False, str(e), status_code=500).to_response()
+
+@app.route("/timetable", methods=["POST"])
+def timetable():
+    try:
+        ssoToken = request.headers["SSO-Token"]
+        if not ssoToken:
+            return ErpResponse(False, "SSO-Token header not found", status_code=400).to_response()
+
+        ERP_TIMETABLE_URL = "https://erp.iitkgp.ac.in/Acad/student/view_stud_time_table.jsp"
+        data = {
+            "ssoToken": ssoToken,
+            "module_id": '16',
+            "menu_id": '40',
+        }
+
+        session = requests.Session()
+        erp_utils.populate_session_with_login_tokens(session, ssoToken)
+        r = erp_utils.request(session, method='POST', url=ERP_TIMETABLE_URL, headers=headers, data=data)
+
+        return ErpResponse(True, data={
+            "status_code": r.status_code,
+            "content": r.text
         }).to_response()
     except Exception as e:
         return ErpResponse(False, str(e), status_code=500).to_response()
