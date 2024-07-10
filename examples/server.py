@@ -24,9 +24,10 @@ class ErpResponse:
 
     def to_dict(self):
         response = {
-            "status": "success" if self.success else "error",
-            "message": self.message
+            "status": "success" if self.success else "error"
         }
+        if self.message:
+            response.update({"message": self.message})
         if self.data:
             response.update(self.data)
         return response
@@ -44,10 +45,11 @@ def get_secret_question():
             return ErpResponse(False, "Roll Number not provided", status_code=400).to_response()
 
         session = requests.Session()
-        secret_question = erp.get_secret_question(headers=headers, session=session, roll_number=roll_number, log=True)
+        secret_question = erp.get_secret_question(
+            headers=headers, session=session, roll_number=roll_number, log=True)
         sessionToken = erp_utils.get_cookie(session, 'JSESSIONID')
 
-        return ErpResponse(True, message="ERP Login Completed!", data={
+        return ErpResponse(True, data={
             "SECRET_QUESTION": secret_question,
             "SESSION_TOKEN": sessionToken
         }).to_response()
@@ -77,7 +79,8 @@ def request_otp():
             secret_answer=secret_answer,
             sessionToken=sessionToken
         )
-        erp.request_otp(headers=headers, session=session, login_details=login_details, log=True)
+        erp.request_otp(headers=headers, session=session,
+                        login_details=login_details, log=True)
 
         return ErpResponse(True, message="OTP has been sent to your connected email accounts").to_response()
     except Exception as e:
@@ -109,13 +112,15 @@ def login():
 
         session = requests.Session()
         erp_utils.set_cookie(session, 'JSESSIONID', sessionToken)
-        ssoToken = erp.signin(headers=headers, session=session, login_details=login_details, log=True)
+        ssoToken = erp.signin(headers=headers, session=session,
+                              login_details=login_details, log=True)
 
         return ErpResponse(True, data={
             "ssoToken": ssoToken
         }).to_response()
     except Exception as e:
         return ErpResponse(False, str(e), status_code=500).to_response()
+
 
 @app.route("/timetable", methods=["POST"])
 def timetable():
@@ -133,7 +138,8 @@ def timetable():
 
         session = requests.Session()
         erp_utils.populate_session_with_login_tokens(session, ssoToken)
-        r = erp_utils.request(session, method='POST', url=ERP_TIMETABLE_URL, headers=headers, data=data)
+        r = erp_utils.request(session, method='POST',
+                              url=ERP_TIMETABLE_URL, headers=headers, data=data)
 
         return ErpResponse(True, data={
             "status_code": r.status_code,
