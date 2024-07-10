@@ -9,16 +9,24 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 import logging
 logging.basicConfig(level=logging.INFO)
 
+def get_cookie(session: requests.Session, cookie_name: str, **kwargs):
+    """Gets the session object with given cookie."""
+    return session.cookies.get(cookie_name, **kwargs)
+
+def set_cookie(session: requests.Session, cookie_name: str, cookie_value: str, **kwargs):
+    """Sets the session object with given cookie."""
+    session.cookies.set(cookie_name, cookie_value, domain='erp.iitkgp.ac.in', **kwargs)
+
 
 def populate_session_with_login_tokens(session: requests.Session, ssoToken: str):
     """Populates the session object with given login tokens."""
-    session.cookies.clear() # Clear all cookies from the session
-    # This is done to clear out old cookies + cookies irrelevant for login, 
+    session.cookies.clear()  # Clear all cookies from the session
+    # This is done to clear out old cookies + cookies irrelevant for login,
     # i.e. cookies obtained after traversing further inside ERP
     # They will be generated later, since traversing will be part of loop - if the loop exists
-    
-    session.cookies.set('ssoToken', ssoToken, domain='erp.iitkgp.ac.in')
-    
+
+    set_cookie(session, 'ssoToken', ssoToken)
+
 
 def write_tokens_to_file(token_file: str, sessionToken: str, ssoToken: str, log: bool):
     """Writes session tokens to the token file if present."""
@@ -78,13 +86,13 @@ def generate_token():
 
     creds = None
     if os.path.exists(token_path):
-        creds = Credentials.from_authorized_user_file(token_path, scopes)	
+        creds = Credentials.from_authorized_user_file(token_path, scopes)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(credentials_path, scopes)
-            creds = flow.run_local_server(port=0)	
+            creds = flow.run_local_server(port=0)
 
         if not os.path.exists(token_path):
             with open(token_path, "w") as token:
