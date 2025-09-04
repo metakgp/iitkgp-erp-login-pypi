@@ -3,6 +3,7 @@ import requests
 import iitkgp_erp_login.erp as erp
 from flask import Flask, request, jsonify
 import iitkgp_erp_login.utils as erp_utils
+from iitkgp_erp_login.logger import logger
 
 app = Flask(__name__)
 
@@ -20,7 +21,7 @@ class ErpResponse:
         self.status_code = status_code
 
         if not success:
-            logging.error(f" {message}")
+            logger.error(f" {message}")
 
     def to_dict(self):
         response = {
