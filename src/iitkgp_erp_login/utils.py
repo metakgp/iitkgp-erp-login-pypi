@@ -6,9 +6,7 @@ from typing import Literal
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
-
-import logging
-logging.basicConfig(level=logging.INFO)
+from iitkgp_erp_login.logger import logger
 
 
 def get_cookie(session: requests.Session, cookie_name: str, **kwargs):
@@ -38,9 +36,9 @@ def write_tokens_to_file(token_file: str, sessionToken: str, ssoToken: str, log:
             file.write(sessionToken + "\n")
             file.write(ssoToken + "\n")
 
-        if log: logging.info(" Stored tokens in file")
+        if log: logger.info(" Stored tokens in file")
     except IOError:
-        logging.error(" Error writing to token file %s", token_file)
+        logger.error(" Error writing to token file %s", token_file)
 
 
 def get_tokens_from_file(token_file: str, log: bool):
@@ -52,9 +50,9 @@ def get_tokens_from_file(token_file: str, log: bool):
             sessionToken = lines[0].strip() if len(lines) > 0 else None
             ssoToken = lines[1].strip() if len(lines) > 1 else None
 
-        if log: logging.info(" Retrieved tokens from file")
+        if log: logger.info(" Retrieved tokens from file")
     except (FileNotFoundError, IOError):
-        logging.error(f" Token file doesn't exist")
+        logger.error(f" Token file doesn't exist")
 
     return sessionToken, ssoToken
 

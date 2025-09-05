@@ -1,3 +1,4 @@
+from iitkgp_erp_login.logger import logger
 from iitkgp_erp_login.utils import get_import_location, write_tokens_to_file, get_tokens_from_file, populate_session_with_login_tokens
 from iitkgp_erp_login.endpoints import *
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -12,8 +13,6 @@ from typing import TypedDict
 from bs4 import BeautifulSoup as bs
 
 import json
-import logging
-logging.basicConfig(level=logging.INFO)
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -48,7 +47,7 @@ class ErpCreds(TypedDict):
 class ErpLoginError(Exception):
     def __init__(self, message: str):
         super().__init__(message)
-        logging.error(f" {message}")
+        logger.error(f" {message}")
 
 
 def get_sessiontoken(session: requests.Session, log: bool = False):
@@ -59,7 +58,7 @@ def get_sessiontoken(session: requests.Session, log: bool = False):
         sessionToken = soup.find(id='sessionToken')['value']
 
         if log:
-            logging.info(" Generated sessionToken")
+            logger.info(" Generated sessionToken")
     except (requests.exceptions.RequestException, KeyError) as e:
         raise ErpLoginError(f"Failed to generate sessionToken: {str(e)}")
 
@@ -74,7 +73,7 @@ def get_secret_question(headers: dict[str, str], session: requests.Session, roll
         if r.text == "FALSE":
             raise ErpLoginError("Invalid Roll Number")
         if log:
-            logging.info(" Fetched Security Question")
+            logger.info(" Fetched Security Question")
     except (requests.exceptions.RequestException, KeyError) as e:
         raise ErpLoginError(f"Failed to fetch Security Question: {str(e)}")
 
@@ -107,7 +106,7 @@ def request_otp(headers: dict[str, str], session: requests.Session, login_detail
                 raise ErpLoginError("Invalid Password")
             case erp_responses.OTP_SENT_MESSAGE:
                 if log:
-                    logging.info(" Requested OTP")
+                    logger.info(" Requested OTP")
             case _:
                 raise ErpLoginError(f"Failed to request OTP: {res['msg']}")
     except requests.exceptions.RequestException as e:
@@ -129,10 +128,10 @@ def signin(headers: dict[str, str], session: requests.Session, login_details: Lo
         raise ErpLoginError(f"Failed to generate ssoToken: {str(e)}")
     else:
         if log:
-            logging.info(" Generated ssoToken")
+            logger.info(" Generated ssoToken")
 
     if log:
-        logging.info(" ERP login completed!")
+        logger.info(" ERP login completed!")
     return ssoToken
 
 
@@ -153,7 +152,7 @@ def login(
     # Finally, return the function
     if session_alive(session):
         if LOGGING:
-            logging.info(" [SESSION STATUS]: Alive")
+            logger.info(" [SESSION STATUS]: Alive")
         ssoToken = session.cookies.get('ssoToken')
         sessionToken = session.cookies.get('JSID#/IIT_ERP3')
 
@@ -162,7 +161,7 @@ def login(
         return sessionToken, ssoToken
     else:
         if LOGGING:
-            logging.info(" [SESSION STATUS]: Not Alive")
+            logger.info(" [SESSION STATUS]: Not Alive")
 
     # Check if the tokens from the file are valid
     if SESSION_STORAGE_FILE:
@@ -183,14 +182,14 @@ def login(
             # Check if the tokens imported from the file are valid and return if yes
             if session_alive(session):
                 if LOGGING:
-                    logging.info(" [TOKENS STATUS]: Valid")
+                    logger.info(" [TOKENS STATUS]: Valid")
 
                 return sessionToken, ssoToken
             else:
                 if LOGGING:
-                    logging.info(" [TOKENS STATUS]: Not Valid")
+                    logger.info(" [TOKENS STATUS]: Not Valid")
         else:
-            logging.info(f" Token file doesn't exist")
+            logger.info(f" Token file doesn't exist")
 
     # The code below executes only if the session and ssoToken are not valid
     if ERPCREDS != None:
@@ -228,7 +227,7 @@ def login(
             otp = getOTP(OTP_CHECK_INTERVAL, headers=headers,
                          session=session, login_details=login_details, log=LOGGING)
             if LOGGING:
-                logging.info(" Received OTP")
+                logger.info(" Received OTP")
 
         except Exception as e:
             raise ErpLoginError(f"Failed to receive OTP: {str(e)}")
