@@ -3,7 +3,7 @@ import time
 import base64
 from googleapiclient.discovery import build
 import requests
-from iitkgp_erp_login.erp import LoginDetails, request_otp
+from iitkgp_erp_login.erp import ErpLoginError, LoginDetails, request_otp
 from iitkgp_erp_login.utils import generate_token
 from iitkgp_erp_login.logger import logger
 
@@ -28,9 +28,12 @@ def getOTP(OTP_CHECK_INTERVAL,headers: dict[str, str], session: requests.Session
     request_otp(headers=headers, session=session, login_details=login_details, log=log)
     if log: logger.info(" Waiting for OTP ...")
     
-    while True:
-        if (mail_id := getMailID(service)) != latest_mail_id:
-            break
+    for i in range(5):
+        try:
+            if (mail_id := getMailID(service)) != latest_mail_id:
+                break
+        except Exception as e:
+            raise ErpLoginError(f"Failed to fetch OTP: {str(e)}")
         time.sleep(OTP_CHECK_INTERVAL)
     
     mail = service.users().messages().get(userId="me", id=mail_id).execute()
