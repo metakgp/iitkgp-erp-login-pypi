@@ -29,11 +29,10 @@ def getOTP(OTP_CHECK_INTERVAL,headers: dict[str, str], session: requests.Session
     if log: logger.info(" Waiting for OTP ...")
     
     for i in range(5):
-        try:
-            if (mail_id := getMailID(service)) != latest_mail_id:
-                break
-        except Exception as e:
-            raise ErpLoginError(f"Failed to fetch OTP: {str(e)}")
+        if (mail_id := getMailID(service)) != latest_mail_id:
+            break
+        if i == 4:
+            raise ErpLoginError(f"Timed out while fetching OTP")
         time.sleep(OTP_CHECK_INTERVAL)
     
     mail = service.users().messages().get(userId="me", id=mail_id).execute()
