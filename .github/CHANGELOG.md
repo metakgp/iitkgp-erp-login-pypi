@@ -1,5 +1,20 @@
 # CHANGELOG
 
+ ### [2.4.5](https://github.com/metakgp/iitkgp-erp-login-pypi/compare/v2.4.2...v2.4.5) (2025-10-12)
+
+
+### Features
+
+* added logger module ([2d85f52](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/2d85f523999c45f72c09df08129f6b0909eec611))
+
+
+### Bug Fixes
+
+* add timeout to otp wait loop ([524941b](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/524941b7d9db83815ff5a4eb361f4dd95eda0cea))
+* im stupid ([bcc1fef](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/bcc1fef34cf8c27af81b29667e4993c0eff21128))
+* im stupid pt.2 ([abd063c](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/abd063c2044964db1967bb0bf83fdad442ebd119))
+
+ 
  ### [2.4.2](https://github.com/metakgp/iitkgp-erp-login-pypi/compare/v2.4.1...v2.4.2) (2024-07-10)
 
 
