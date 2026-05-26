@@ -253,4 +253,4 @@ def session_alive(session: requests.Session):
     """Checks if a session is alive."""
     response = session.get(WELCOMEPAGE_URL)
     content_length = response.headers.get("Content-Length")
-    return content_length == '1034'
+    return content_length == '741'
