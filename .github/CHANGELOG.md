@@ -1,5 +1,13 @@
 # CHANGELOG
 
+ ### [2.4.6](https://github.com/metakgp/iitkgp-erp-login-pypi/compare/v2.4.5...v2.4.6) (2026-05-26)
+
+
+### Bug Fixes
+
+* update session_alive check for content length ([399116b](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/399116b8ed4cc98d421975143746d91f5e4e252c))
+
+ 
  ### [2.4.5](https://github.com/metakgp/iitkgp-erp-login-pypi/compare/v2.4.2...v2.4.5) (2025-10-12)
 
 
