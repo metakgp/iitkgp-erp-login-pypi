@@ -134,7 +134,7 @@ def signin(headers: dict[str, str], session: requests.Session, login_details: Lo
             if erp_responses.OTP_MISMATCH_ERROR in r.text:
                 raise ErpLoginError("Invalid OTP")
 
-            if 'previous session is still active' in r.text.lower() or 'you are already logged in' in r.text.lower():
+            if 'previous session is still active' in r.text.lower():
                 if log:
                     logger.info(" ERP reports user already logged in; clearing sessions and retrying")
                 clear_all_sessions(
