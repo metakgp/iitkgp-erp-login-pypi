@@ -113,26 +113,56 @@ def request_otp(headers: dict[str, str], session: requests.Session, login_detail
         raise ErpLoginError(f"Failed to request OTP: {str(e)}")
 
 
+def clear_all_sessions(headers: dict[str, str], session: requests.Session, roll_number: str, log: bool = False):
+    """Clears all active ERP sessions for the given roll number."""
+    try:
+        r = session.post(CLEAR_ALL_SESSIONS_URL, data={'user_code': roll_number}, headers=headers)
+        if r.status_code >= 400:
+            raise ErpLoginError(f"Failed to clear ERP sessions: HTTP {r.status_code}")
+        if log:
+            logger.info(" Cleared active ERP sessions")
+        return r
+    except requests.exceptions.RequestException as e:
+        raise ErpLoginError(f"Failed to clear ERP sessions: {str(e)}")
+
+
 def signin(headers: dict[str, str], session: requests.Session, login_details: LoginDetails, log: bool = False):
     """Logs into the ERP for the given session."""
-    try:
-        r = session.post(LOGIN_URL, data=login_details, headers=headers)
-        if erp_responses.OTP_MISMATCH_ERROR in r.text:
-            raise ErpLoginError("Invalid OTP")
-        ssoToken = re.search(r'\?ssoToken=(.+)$',
-                             r.history[1].headers['Location']).group(1)
-    except (requests.exceptions.RequestException, IndexError) as e:
-        raise ErpLoginError(f"ERP login failed: {str(e)}")
+    for attempt in range(2):
+        try:
+            r = session.post(LOGIN_URL, data=login_details, headers=headers)
+            if erp_responses.OTP_MISMATCH_ERROR in r.text:
+                raise ErpLoginError("Invalid OTP")
 
-    if ssoToken is None:
-        raise ErpLoginError(f"Failed to generate ssoToken: {str(e)}")
-    else:
-        if log:
-            logger.info(" Generated ssoToken")
+            if 'previous session is still active' in r.text.lower() or 'you are already logged in' in r.text.lower():
+                if log:
+                    logger.info(" ERP reports user already logged in; clearing sessions and retrying")
+                clear_all_sessions(
+                    headers=headers,
+                    session=session,
+                    roll_number=login_details['user_id'],
+                    log=log,
+                )
+                continue
 
-    if log:
-        logger.info(" ERP login completed!")
-    return ssoToken
+            if not r.history:
+                raise ErpLoginError("ERP login failed: no redirect after login attempt")
+
+            for redirect_response in r.history:
+                location = redirect_response.headers.get('Location', '')
+                ssoToken = re.search(r'\?ssoToken=(.+)$', location)
+                if ssoToken:
+                    if log:
+                        logger.info(" Generated ssoToken")
+                    if log:
+                        logger.info(" ERP login completed!")
+                    return ssoToken.group(1)
+
+            raise ErpLoginError("Failed to generate ssoToken")
+        except (requests.exceptions.RequestException, IndexError) as e:
+            raise ErpLoginError(f"ERP login failed: {str(e)}")
+
+    raise ErpLoginError("ERP login failed: user remains logged in elsewhere")
 
 
 def login(
