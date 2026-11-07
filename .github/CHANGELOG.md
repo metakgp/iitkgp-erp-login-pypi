@@ -1,5 +1,13 @@
 # CHANGELOG
 
+ ### [2.4.7](https://github.com/metakgp/iitkgp-erp-login-pypi/compare/v2.4.6...v2.4.7) (2026-11-07)
+
+
+### Features
+
+* implement session clearing and update signin logic to handle active sessions ([0701c90](https://github.com/metakgp/iitkgp-erp-login-pypi/commit/0701c9094db8a29767068930cba90cfd9205a6cf))
+
+ 
  ### [2.4.6](https://github.com/metakgp/iitkgp-erp-login-pypi/compare/v2.4.5...v2.4.6) (2026-05-26)
 
 
