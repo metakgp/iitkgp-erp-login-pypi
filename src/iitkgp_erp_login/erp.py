@@ -59,7 +59,7 @@ def get_sessiontoken(session: requests.Session, log: bool = False):
 
         if log:
             logger.info(" Generated sessionToken")
-    except (requests.exceptions.RequestException, KeyError) as e:
+    except (requests.exceptions.RequestException, KeyError, TypeError) as e:
         raise ErpLoginError(f"Failed to generate sessionToken: {str(e)}")
 
     return sessionToken
@@ -175,16 +175,12 @@ def login(
     global ROLL_NUMBER
 
     # Check if the session is alive.
-    # If it is then extract tokens from it +
-    # Remove cookies not related to login process from session object and
-    # Finally, return the function
+    # If it is then extract tokens from it and return
     if session_alive(session):
         if LOGGING:
             logger.info(" [SESSION STATUS]: Alive")
         ssoToken = session.cookies.get('ssoToken')
         sessionToken = session.cookies.get('JSID#/IIT_ERP3')
-
-        populate_session_with_login_tokens(session, ssoToken)
 
         return sessionToken, ssoToken
     else:
@@ -220,6 +216,7 @@ def login(
             logger.info(f" Token file doesn't exist")
 
     # The code below executes only if the session and ssoToken are not valid
+    session.cookies.clear()
     if ERPCREDS != None:
         # Import credentials if passed to the function
         ROLL_NUMBER = ERPCREDS.ROLL_NUMBER
@@ -277,8 +274,25 @@ def login(
     return sessionToken, ssoToken
 
 
+def keep_alive(session: requests.Session, log: bool = False):
+    """Refreshes and extends the ERP session by 30 minutes using the keepAlive endpoint."""
+    try:
+        response = session.get(KEEPALIVE_URL, timeout=20)
+        is_extended = response.status_code == 200 and "Session Extended" in response.text
+        if is_extended:
+            if log:
+                logger.info(" Session Extended")
+            return True
+        else:
+            if log:
+                logger.info(" Session Keep-Alive Failed")
+            return False
+    except requests.exceptions.RequestException as e:
+        if log:
+            logger.error(f" Failed to extend session: {str(e)}")
+        return False
+
+
 def session_alive(session: requests.Session):
-    """Checks if a session is alive."""
-    response = session.get(WELCOMEPAGE_URL)
-    content_length = response.headers.get("Content-Length")
-    return content_length == '741'
+    """Checks if a session is alive (and extends it if alive)."""
+    return keep_alive(session)

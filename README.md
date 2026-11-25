@@ -31,6 +31,10 @@ https://github.com/proffapt/iitkgp-erp-login-pypi/assets/86282911/c0401f6a-80af-
 	- <a href="#session-alive-input">Input</a>
 	- <a href="#session-alive-output">Output</a>
 	- <a href="#session-alive-usage">Usage</a>
+- <a href="#keep-alive">Session keep-alive / refresh</a>
+	- <a href="#keep-alive-input">Input</a>
+	- <a href="#keep-alive-output">Output</a>
+	- <a href="#keep-alive-usage">Usage</a>
 - <a href="#webapps">Using in WebApps</a>
     - <a href="#implementing-login-workflow-for-webapps">Implementing Login workflow</a>
 - <a href="#example">Example</a>
@@ -335,6 +339,48 @@ while True:
 ```
 > [!Note] 
 > This is merely a Proof of Concept example; this exact functionality has been integrated into the login function itself from version **2.3.1** onwards.
+
+<div id="keep-alive"></div>
+
+## Session keep-alive / refresh
+
+ERP provides a `keepAlive.htm` endpoint that extends an active session by 30 minutes without needing to re-authenticate or re-enter OTPs. This logic is implemented in the `keep_alive(session)` function in [erp.py](https://github.com/proffapt/iitkgp-erp-login-pypi/blob/main/src/iitkgp_erp_login/erp.py).
+
+> [!TIP]
+> `session_alive(session)` internally calls `keep_alive(session)`: every time you check if the session is alive, it automatically extends the session by 30 minutes if valid!
+
+<div id="keep-alive-input"></div>
+
+### Input
+
+The function requires the following argument:
+
+- `session`: [requests.Session()](https://docs.python-requests.org/en/latest/_modules/requests/sessions/) object containing the active ERP session.
+- `log`: (Optional) `bool`, defaults to `False`. When `True`, logs status messages.
+
+<div id="keep-alive-output"></div>
+
+### Output
+
+The `keep_alive(session)` function returns a boolean value:
+| Status | Return Value |
+| ------ | :------------: |
+| Extended (`Success`) | `True` |
+| Failed / Expired | `False` |
+
+<div id="keep-alive-usage"></div>
+
+### Usage
+
+```python
+import iitkgp_erp_login.erp as erp
+
+# Check and extend session by 30 minutes
+if erp.keep_alive(session, log=True):
+    print("Session extended successfully!")
+else:
+    print("Session expired, re-login required.")
+```
 
 <div id="webapps">
 
